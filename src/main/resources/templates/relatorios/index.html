@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatórios - Banco Malvader</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .card-relatorio {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 1.5rem;
+            transition: all 0.3s ease;
+        }
+        .card-relatorio:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+        .relatorio-card {
+            text-align: center;
+            padding: 2rem 1rem;
+            cursor: pointer;
+            height: 100%;
+        }
+        .relatorio-card i {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        .filtro-section {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+<!-- Header -->
+<div th:replace="~{fragments/header :: header}"></div>
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div th:replace="~{fragments/sidebar :: sidebar('relatorios')}"></div>
+
+        <!-- Main Content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Relatórios</h1>
+                <div class="btn-group">
+                    <button class="btn btn-outline-primary">
+                        <i class="fas fa-print me-2"></i>Imprimir
+                    </button>
+                    <button class="btn btn-outline-success">
+                        <i class="fas fa-download me-2"></i>Exportar
+                    </button>
+                </div>
+            </div>
+
+            <!-- Alertas -->
+            <div th:if="${sucesso}" class="alert alert-success alert-dismissible fade show">
+                <i class="fas fa-check-circle me-2"></i>
+                <span th:text="${sucesso}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+
+            <!-- Filtros -->
+            <div class="card card-relatorio">
+                <div class="card-header bg-light">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-filter me-2"></i>
+                        Filtros do Relatório
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <label for="dataInicio" class="form-label">Data Início</label>
+                            <input type="date" class="form-control" id="dataInicio">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="dataFim" class="form-label">Data Fim</label>
+                            <input type="date" class="form-control" id="dataFim">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="tipoRelatorio" class="form-label">Tipo de Relatório</label>
+                            <select class="form-select" id="tipoRelatorio">
+                                <option value="">Todos os relatórios</option>
+                                <option value="MOVIMENTACOES">Movimentações</option>
+                                <option value="CONTAS">Contas</option>
+                                <option value="CLIENTES">Clientes</option>
+                                <option value="FINANCEIRO">Financeiro</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">&nbsp;</label>
+                            <button class="btn btn-primary w-100" id="btnGerarRelatorio">
+                                <i class="fas fa-chart-bar me-2"></i>Gerar Relatório
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tipos de Relatórios -->
+            <div class="row">
+                <!-- Movimentações -->
+                <div class="col-md-3 mb-4">
+                    <div class="card card-relatorio">
+                        <div class="card-body relatorio-card" onclick="gerarRelatorio('MOVIMENTACOES')">
+                            <i class="fas fa-exchange-alt text-primary"></i>
+                            <h5>Movimentações</h5>
+                            <p class="text-muted">Relatório detalhado de transações e operações</p>
+                            <span class="badge bg-primary">Disponível</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contas -->
+                <div class="col-md-3 mb-4">
+                    <div class="card card-relatorio">
+                        <div class="card-body relatorio-card" onclick="gerarRelatorio('CONTAS')">
+                            <i class="fas fa-wallet text-success"></i>
+                            <h5>Contas</h5>
+                            <p class="text-muted">Relatório de contas ativas, inativas e saldos</p>
+                            <span class="badge bg-success">Disponível</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Clientes -->
+                <div class="col-md-3 mb-4">
+                    <div class="card card-relatorio">
+                        <div class="card-body relatorio-card" onclick="gerarRelatorio('CLIENTES')">
+                            <i class="fas fa-users text-info"></i>
+                            <h5>Clientes</h5>
+                            <p class="text-muted">Relatório de cadastro e score de crédito</p>
+                            <span class="badge bg-info">Disponível</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Financeiro -->
+                <div class="col-md-3 mb-4">
+                    <div class="card card-relatorio">
+                        <div class="card-body relatorio-card" onclick="gerarRelatorio('FINANCEIRO')">
+                            <i class="fas fa-chart-line text-warning"></i>
+                            <h5>Financeiro</h5>
+                            <p class="text-muted">Relatório de lucros, taxas e desempenho</p>
+                            <span class="badge bg-warning">Disponível</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resultados do Relatório -->
+            <div class="card card-relatorio">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>
+                        Resultado do Relatório
+                    </h5>
+                    <div>
+                        <span class="badge bg-secondary me-2" id="infoPeriodo">Período: -</span>
+                        <span class="badge bg-primary" id="infoRegistros">0 registros</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Gráficos/Estatísticas -->
+                    <div class="row mb-4">
+                        <div class="col-md-3 text-center">
+                            <div class="border rounded p-3">
+                                <i class="fas fa-money-bill-wave fa-2x text-success mb-2"></i>
+                                <h4 id="totalDepositos">R$ 0,00</h4>
+                                <small class="text-muted">Total em Depósitos</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <div class="border rounded p-3">
+                                <i class="fas fa-hand-holding-usd fa-2x text-primary mb-2"></i>
+                                <h4 id="totalSaques">R$ 0,00</h4>
+                                <small class="text-muted">Total em Saques</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <div class="border rounded p-3">
+                                <i class="fas fa-exchange-alt fa-2x text-info mb-2"></i>
+                                <h4 id="totalTransferencias">R$ 0,00</h4>
+                                <small class="text-muted">Total em Transferências</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3 text-center">
+                            <div class="border rounded p-3">
+                                <i class="fas fa-chart-line fa-2x text-warning mb-2"></i>
+                                <h4 id="totalOperacoes">0</h4>
+                                <small class="text-muted">Total de Operações</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tabela de Dados -->
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                            <tr>
+                                <th>Data/Hora</th>
+                                <th>Tipo</th>
+                                <th>Valor</th>
+                                <th>Conta Origem</th>
+                                <th>Conta Destino</th>
+                                <th>Descrição</th>
+                            </tr>
+                            </thead>
+                            <tbody id="tabelaRelatorio">
+                            <tr>
+                                <td colspan="6" class="text-center text-muted py-4">
+                                    <i class="fas fa-chart-bar fa-2x mb-3 opacity-50"></i>
+                                    <p>Selecione um tipo de relatório e clique em "Gerar Relatório"</p>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Data padrão (últimos 30 dias)
+    const dataFim = new Date();
+    const dataInicio = new Date();
+    dataInicio.setDate(dataInicio.getDate() - 30);
+
+    document.getElementById('dataInicio').value = dataInicio.toISOString().split('T')[0];
+    document.getElementById('dataFim').value = dataFim.toISOString().split('T')[0];
+
+    // Gerar relatório
+    document.getElementById('btnGerarRelatorio').addEventListener('click', function() {
+        const tipo = document.getElementById('tipoRelatorio').value;
+        if (!tipo) {
+            alert('Por favor, selecione um tipo de relatório.');
+            return;
+        }
+        gerarRelatorio(tipo);
+    });
+
+    function gerarRelatorio(tipo) {
+        const dataInicio = document.getElementById('dataInicio').value;
+        const dataFim = document.getElementById('dataFim').value;
+
+        if (!dataInicio || !dataFim) {
+            alert('Por favor, selecione o período do relatório.');
+            return;
+        }
+
+        // Simular geração de relatório
+        simularRelatorio(tipo, dataInicio, dataFim);
+    }
+
+    function simularRelatorio(tipo, inicio, fim) {
+        // Atualizar informações do período
+        document.getElementById('infoPeriodo').textContent = `Período: ${formatarData(inicio)} à ${formatarData(fim)}`;
+
+        // Dados simulados
+        const dados = {
+            'MOVIMENTACOES': {
+                totalDepositos: 154200.75,
+                totalSaques: 89250.30,
+                totalTransferencias: 45300.00,
+                totalOperacoes: 289,
+                registros: [
+                    { data: '2024-10-28 14:30', tipo: 'DEPOSITO', valor: 1200.00, origem: '001234-5', destino: '001234-5', descricao: 'Depósito em conta' },
+                    { data: '2024-10-28 13:15', tipo: 'SAQUE', valor: 500.00, origem: '005678-9', destino: '-', descricao: 'Saque terminal' },
+                    { data: '2024-10-28 11:45', tipo: 'TRANSFERENCIA', valor: 300.00, origem: '001234-5', destino: '005678-9', descricao: 'Transferência PIX' }
+                ]
+            },
+            'CONTAS': {
+                totalDepositos: 0,
+                totalSaques: 0,
+                totalTransferencias: 0,
+                totalOperacoes: 156,
+                registros: [
+                    { data: '2024-10-28 09:30', tipo: 'ABERTURA', valor: 0, origem: '-', destino: '009876-5', descricao: 'Conta Corrente - Maria Silva' },
+                    { data: '2024-10-27 15:20', tipo: 'ABERTURA', valor: 0, origem: '-', destino: '009877-3', descricao: 'Conta Poupança - João Santos' }
+                ]
+            }
+        };
+
+        const relatorio = dados[tipo] || {
+            totalDepositos: 0,
+            totalSaques: 0,
+            totalTransferencias: 0,
+            totalOperacoes: 0,
+            registros: []
+        };
+
+        // Atualizar estatísticas
+        document.getElementById('totalDepositos').textContent = formatarMoeda(relatorio.totalDepositos);
+        document.getElementById('totalSaques').textContent = formatarMoeda(relatorio.totalSaques);
+        document.getElementById('totalTransferencias').textContent = formatarMoeda(relatorio.totalTransferencias);
+        document.getElementById('totalOperacoes').textContent = relatorio.totalOperacoes;
+        document.getElementById('infoRegistros').textContent = relatorio.registros.length + ' registros';
+
+        // Atualizar tabela
+        const tbody = document.getElementById('tabelaRelatorio');
+        tbody.innerHTML = '';
+
+        if (relatorio.registros.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="text-center text-muted py-4">
+                        <i class="fas fa-search fa-2x mb-3 opacity-50"></i>
+                        <p>Nenhum registro encontrado para o período selecionado</p>
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        relatorio.registros.forEach(registro => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${registro.data}</td>
+                <td><span class="badge bg-${getTipoBadge(registro.tipo)}">${registro.tipo}</span></td>
+                <td>${registro.valor > 0 ? formatarMoeda(registro.valor) : '-'}</td>
+                <td>${registro.origem}</td>
+                <td>${registro.destino}</td>
+                <td>${registro.descricao}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function formatarData(data) {
+        return new Date(data + 'T00:00:00').toLocaleDateString('pt-BR');
+    }
+
+    function formatarMoeda(valor) {
+        return new Intl.NumberFormat('pt-BR', {
+            style: 'currency',
+            currency: 'BRL'
+        }).format(valor);
+    }
+
+    function getTipoBadge(tipo) {
+        const tipos = {
+            'DEPOSITO': 'success',
+            'SAQUE': 'primary',
+            'TRANSFERENCIA': 'info',
+            'ABERTURA': 'warning',
+            'ENCERRAMENTO': 'danger'
+        };
+        return tipos[tipo] || 'secondary';
+    }
+</script>
+</body>
+</html>
