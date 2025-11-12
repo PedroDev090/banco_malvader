@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Abrir Conta - Banco Malvader</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .card-conta {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 1.5rem;
+        }
+        .tipo-conta-card {
+            border: 2px solid #dee2e6;
+            border-radius: 10px;
+            padding: 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            height: 100%;
+        }
+        .tipo-conta-card:hover, .tipo-conta-card.active {
+            border-color: #3498db;
+            background: rgba(52, 152, 219, 0.05);
+        }
+        .tipo-conta-card.active {
+            border-color: #3498db;
+            background: rgba(52, 152, 219, 0.1);
+        }
+        .form-dinamico {
+            display: none;
+        }
+        .form-dinamico.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+<!-- Header -->
+<div th:replace="~{fragments/header :: header}"></div>
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div th:replace="~{fragments/sidebar :: sidebar('abrir-conta')}"></div>
+
+        <!-- Main Content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">Abertura de Conta</h1>
+            </div>
+
+            <!-- Alertas -->
+            <div th:if="${sucesso}" class="alert alert-success alert-dismissible fade show">
+                <i class="fas fa-check-circle me-2"></i>
+                <span th:text="${sucesso}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+
+            <div th:if="${erro}" class="alert alert-danger alert-dismissible fade show">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <span th:text="${erro}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+
+            <form th:action="@{/contas/abrir}" th:object="${aberturaContaDTO}" method="post">
+                <div class="row">
+                    <!-- Dados Básicos -->
+                    <div class="col-md-6">
+                        <div class="card card-conta">
+                            <div class="card-header bg-primary text-white">
+                                <h5 class="card-title mb-0">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    Dados Básicos
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <label for="idCliente" class="form-label">ID do Cliente</label>
+                                    <input type="number" th:field="*{idCliente}" class="form-control" id="idCliente"
+                                           placeholder="Digite o ID do cliente" required>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="idAgencia" class="form-label">Agência</label>
+                                    <select th:field="*{idAgencia}" class="form-select" id="idAgencia" required>
+                                        <option value="">Selecione a agência...</option>
+                                        <option value="1">001 - Centro</option>
+                                        <option value="2">002 - Norte</option>
+                                        <option value="3">003 - Sul</option>
+                                    </select>
+                                </div>
+
+                                <!-- Seleção do Tipo de Conta -->
+                                <div class="mb-3">
+                                    <label class="form-label">Tipo de Conta</label>
+                                    <div class="row">
+                                        <div class="col-md-4 mb-3">
+                                            <div class="tipo-conta-card" data-tipo="CORRENTE">
+                                                <i class="fas fa-wallet fa-2x text-primary mb-2"></i>
+                                                <h6>Conta Corrente</h6>
+                                                <small class="text-muted">Limite e cheque especial</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <div class="tipo-conta-card" data-tipo="POUPANCA">
+                                                <i class="fas fa-piggy-bank fa-2x text-success mb-2"></i>
+                                                <h6>Conta Poupança</h6>
+                                                <small class="text-muted">Rendimento mensal</small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 mb-3">
+                                            <div class="tipo-conta-card" data-tipo="INVESTIMENTO">
+                                                <i class="fas fa-chart-line fa-2x text-warning mb-2"></i>
+                                                <h6>Conta Investimento</h6>
+                                                <small class="text-muted">Aplicações financeiras</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <input type="hidden" th:field="*{tipoConta}" id="tipoConta" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Configurações Específicas -->
+                    <div class="col-md-6">
+                        <!-- Conta Corrente -->
+                        <div id="formCorrente" class="form-dinamico">
+                            <div class="card card-conta">
+                                <div class="card-header bg-info text-white">
+                                    <h5 class="card-title mb-0">
+                                        <i class="fas fa-wallet me-2"></i>
+                                        Configurações - Conta Corrente
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label for="limite" class="form-label">Limite (R$)</label>
+                                        <input type="number" th:field="*{limite}" class="form-control" id="limite"
+                                               step="0.01" min="0" placeholder="0,00" value="1000.00">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="dataVencimento" class="form-label">Data de Vencimento</label>
+                                        <input type="date" th:field="*{dataVencimento}" class="form-control" id="dataVencimento">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="taxaManutencao" class="form-label">Taxa de Manutenção (R$)</label>
+                                        <input type="number" th:field="*{taxaManutencao}" class="form-control" id="taxaManutencao"
+                                               step="0.01" min="0" placeholder="0,00" value="10.00">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Conta Poupança -->
+                        <div id="formPoupanca" class="form-dinamico">
+                            <div class="card card-conta">
+                                <div class="card-header bg-success text-white">
+                                    <h5 class="card-title mb-0">
+                                        <i class="fas fa-piggy-bank me-2"></i>
+                                        Configurações - Conta Poupança
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label for="taxaRendimento" class="form-label">Taxa de Rendimento (% ao mês)</label>
+                                        <input type="number" th:field="*{taxaRendimento}" class="form-control" id="taxaRendimento"
+                                               step="0.001" min="0" placeholder="0,000" value="0.005">
+                                        <small class="text-muted">Exemplo: 0.005 = 0.5% ao mês</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Conta Investimento -->
+                        <div id="formInvestimento" class="form-dinamico">
+                            <div class="card card-conta">
+                                <div class="card-header bg-warning text-white">
+                                    <h5 class="card-title mb-0">
+                                        <i class="fas fa-chart-line me-2"></i>
+                                        Configurações - Conta Investimento
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3">
+                                        <label for="perfilRisco" class="form-label">Perfil de Risco</label>
+                                        <select th:field="*{perfilRisco}" class="form-select" id="perfilRisco">
+                                            <option value="BAIXO">Baixo</option>
+                                            <option value="MEDIO" selected>Médio</option>
+                                            <option value="ALTO">Alto</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="valorMinimo" class="form-label">Valor Mínimo (R$)</label>
+                                        <input type="number" th:field="*{valorMinimo}" class="form-control" id="valorMinimo"
+                                               step="0.01" min="0" placeholder="0,00" value="1000.00">
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="taxaRendimentoBase" class="form-label">Taxa Base (% ao mês)</label>
+                                        <input type="number" th:field="*{taxaRendimentoBase}" class="form-control" id="taxaRendimentoBase"
+                                               step="0.001" min="0" placeholder="0,000" value="0.008">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Botão de Submissão -->
+                        <div class="card card-conta">
+                            <div class="card-body text-center">
+                                <button type="submit" class="btn btn-primary btn-lg w-100">
+                                    <i class="fas fa-plus-circle me-2"></i>Abrir Conta
+                                </button>
+                                <small class="text-muted mt-2 d-block">
+                                    A conta será criada com número automático e dígito verificador
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </main>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Controle dos tipos de conta
+    document.querySelectorAll('.tipo-conta-card').forEach(card => {
+        card.addEventListener('click', function() {
+            // Remove active de todos
+            document.querySelectorAll('.tipo-conta-card').forEach(c => c.classList.remove('active'));
+            // Adiciona active no selecionado
+            this.classList.add('active');
+
+            const tipo = this.getAttribute('data-tipo');
+            document.getElementById('tipoConta').value = tipo;
+
+            // Mostra o formulário correto
+            document.querySelectorAll('.form-dinamico').forEach(form => form.classList.remove('active'));
+            document.getElementById('form' + tipo.charAt(0).toUpperCase() + tipo.slice(1)).classList.add('active');
+        });
+    });
+
+    // Seleciona conta corrente por padrão
+    document.querySelector('.tipo-conta-card[data-tipo="CORRENTE"]').click();
+
+    // Data de vencimento padrão (1 ano a partir de hoje)
+    const hoje = new Date();
+    const umAno = new Date(hoje.getFullYear() + 1, hoje.getMonth(), hoje.getDate());
+    document.getElementById('dataVencimento').value = umAno.toISOString().split('T')[0];
+</script>
+</body>
+</html>

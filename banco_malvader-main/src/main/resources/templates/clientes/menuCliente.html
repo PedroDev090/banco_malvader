@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Menu do Cliente - Banco Malvader</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
+  <style>
+    :root {
+      --primary-color: #2c3e50;
+      --secondary-color: #3498db;
+      --bg-light: #f8f9fa;
+      --card-bg: #ffffff;
+    }
+
+    body {
+      background: var(--bg-light);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: #333;
+    }
+
+    .sidebar {
+      background: var(--primary-color);
+      color: white;
+      min-height: 100vh;
+      position: fixed;
+      width: 260px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 2px 0 8px rgba(0,0,0,0.15);
+    }
+
+    .logo-area {
+      text-align: center;
+      padding: 2.5rem 1rem;
+      border-bottom: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .menu-items {
+      flex-grow: 1;
+      padding-top: 1rem;
+    }
+
+    .menu-item {
+      display: block;
+      padding: 16px 22px;
+      color: white;
+      text-decoration: none;
+      border-left: 4px solid transparent;
+      transition: all 0.3s ease;
+      font-weight: 500;
+      font-size: 1rem;
+    }
+
+    .menu-item:hover, .menu-item.active {
+      background: rgba(255,255,255,0.1);
+      border-left-color: var(--secondary-color);
+    }
+
+    .main-content {
+      margin-left: 260px;
+      padding: 3rem 2rem;
+      min-height: 100vh;
+    }
+
+    .card-action {
+      border: none;
+      border-radius: 12px;
+      box-shadow: 0 6px 10px rgba(0,0,0,0.1);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      cursor: pointer;
+      padding: 3rem 1rem;
+      text-align: center;
+      background: var(--card-bg);
+      height: 180px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .card-action:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 15px rgba(0,0,0,0.15);
+    }
+
+    .card-action i {
+      font-size: 3rem;
+      color: var(--secondary-color);
+      margin-bottom: 1rem;
+    }
+
+    .card-action h6 {
+      font-size: 1.1rem;
+      margin-bottom: 0;
+      font-weight: 600;
+    }
+
+    .badge-cliente {
+      background: linear-gradient(135deg, #3498db, #2980b9);
+      color: white;
+      padding: 0.6rem 1.2rem;
+      border-radius: 25px;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }
+
+    @media (max-width: 992px) {
+      .main-content {
+        margin-left: 0;
+        padding: 2rem;
+      }
+
+      .sidebar {
+        position: relative;
+        width: 100%;
+        min-height: auto;
+      }
+
+      .card-action {
+        height: auto;
+        padding: 2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<div class="sidebar">
+  <div class="logo-area">
+    <i class="fas fa-university fa-2x mb-2"></i>
+    <h5>Banco Malvader</h5>
+    <small class="text-muted">Área do Cliente</small>
+  </div>
+
+  <div class="menu-items mt-3">
+    <a href="/cliente/dashboard" class="menu-item active">
+      <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+    </a>
+    <a href="/cliente/deposito" class="menu-item">
+      <i class="fas fa-money-bill-wave me-2"></i>Depósito
+    </a>
+    <a href="/cliente/saque" class="menu-item">
+      <i class="fas fa-hand-holding-usd me-2"></i>Saque
+    </a>
+    <a href="/cliente/transferencia" class="menu-item">
+      <i class="fas fa-exchange-alt me-2"></i>Transferência
+    </a>
+    <a href="/cliente/saldo" class="menu-item">
+      <i class="fas fa-wallet me-2"></i>Consultar Saldo
+    </a>
+    <a href="/cliente/extrato" class="menu-item">
+      <i class="fas fa-file-alt me-2"></i>Ver Extrato
+    </a>
+
+    <div class="mt-4 pt-3 border-top border-secondary">
+      <a href="/auth/logout" class="menu-item text-danger">
+        <i class="fas fa-sign-out-alt me-2"></i>Sair
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Main Content -->
+<div class="main-content">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h4 class="mb-0">Painel do Cliente</h4>
+      <small class="text-muted">Escolha uma operação</small>
+    </div>
+    <div>
+      <span class="badge-cliente">
+        <i class="fas fa-user me-1"></i>CLIENTE
+      </span>
+    </div>
+  </div>
+
+  <!-- Ações rápidas -->
+  <div class="row g-4">
+    <div class="col-md-4">
+      <div class="card-action" onclick="location.href='/cliente/deposito'">
+        <i class="fas fa-money-bill-wave"></i>
+        <h6>Depósito</h6>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card-action" onclick="location.href='/cliente/saque'">
+        <i class="fas fa-hand-holding-usd"></i>
+        <h6>Saque</h6>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card-action" onclick="location.href='/cliente/transferencia'">
+        <i class="fas fa-exchange-alt"></i>
+        <h6>Transferência</h6>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card-action" onclick="location.href='/cliente/saldo'">
+        <i class="fas fa-wallet"></i>
+        <h6>Consultar Saldo</h6>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card-action" onclick="location.href='/cliente/extrato'">
+        <i class="fas fa-file-alt"></i>
+        <h6>Ver Extrato</h6>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card-action text-danger" onclick="location.href='/auth/logout'">
+        <i class="fas fa-sign-out-alt"></i>
+        <h6>Sair</h6>
+      </div>
+    </div>
+  </div>
+</div>
