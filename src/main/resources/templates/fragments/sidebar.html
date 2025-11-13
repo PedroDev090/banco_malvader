@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<div th:fragment="sidebar(paginaAtiva)">
+    <div class="col-md-3 col-lg-2 bg-light sidebar">
+        <div class="position-sticky pt-3">
+            <ul class="nav flex-column">
+                <!-- Menu para Todos -->
+                <li class="nav-item">
+                    <a class="nav-link" th:classappend="${paginaAtiva == 'dashboard'} ? 'active'"
+                       th:href="@{/dashboard}">
+                        <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+                    </a>
+                </li>
+
+                <!-- Menu para Funcionários -->
+                <li th:if="${usuario.tipoUsuario == 'FUNCIONARIO'}" class="nav-item">
+                    <a class="nav-link" th:classappend="${paginaAtiva == 'operacoes'} ? 'active'"
+                       th:href="@{/operacoes}">
+                        <i class="fas fa-exchange-alt me-2"></i>Operações
+                    </a>
+                </li>
+
+                <li th:if="${usuario.tipoUsuario == 'FUNCIONARIO'}" class="nav-item">
+                    <a class="nav-link" th:classappend="${paginaAtiva == 'abrir-conta'} ? 'active'"
+                       th:href="@{/contas/abrir}">
+                        <i class="fas fa-plus-circle me-2"></i>Abrir Conta
+                    </a>
+                </li>
+
+                <li th:if="${usuario.tipoUsuario == 'FUNCIONARIO'}" class="nav-item">
+                    <a class="nav-link" th:classappend="${paginaAtiva == 'consultar-conta'} ? 'active'"
+                       th:href="@{/contas/consultar}">
+                        <i class="fas fa-search me-2"></i>Consultar Conta
+                    </a>
+                </li>
+
+                <li th:if="${usuario.tipoUsuario == 'FUNCIONARIO'}" class="nav-item">
+                    <a class="nav-link" th:classappend="${paginaAtiva == 'consultar-clientes'} ? 'active'"
+                       th:href="@{/clientes/consultar}">
+                        <i class="fas fa-users me-2"></i>Consultar Cliente
+                    </a>
+                </li>
+
+                <li th:if="${usuario.tipoUsuario == 'FUNCIONARIO'}" class="nav-item">
+                    <a class="nav-link" th:classappend="${paginaAtiva == 'relatorios'} ? 'active'"
+                       th:href="@{/relatorios}">
+                        <i class="fas fa-chart-bar me-2"></i>Relatórios
+                    </a>
+                </li>
+
+                <!-- Separador -->
+                <li class="nav-item mt-3">
+                    <hr>
+                </li>
+
+                <!-- Logout -->
+                <li class="nav-item">
+                    <a class="nav-link text-danger" th:href="@{/auth/logout}">
+                        <i class="fas fa-sign-out-alt me-2"></i>Sair do Sistema
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+</html>
