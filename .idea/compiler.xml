@@ -10,12 +10,14 @@
           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.40/lombok-1.18.40.jar" />
         </processorPath>
         <module name="banco" />
+        <module name="banco (1)" />
       </profile>
     </annotationProcessing>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="banco" options="-parameters" />
+      <module name="banco (1)" options="-parameters" />
     </option>
   </component>
 </project>

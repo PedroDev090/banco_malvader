@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Recalcular Score - Banco Malvader</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .form-container {
+            max-width: 800px;
+            margin: 2rem auto;
+            background: #fff;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+        }
+        .form-title {
+            text-align: center;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid #e74c3c;
+            padding-bottom: 1rem;
+        }
+        .btn-danger {
+            background-color: #e74c3c;
+            border-color: #e74c3c;
+            font-weight: 600;
+        }
+        .btn-danger:hover {
+            background-color: #c0392b;
+            border-color: #c0392b;
+        }
+        .icon-header {
+            font-size: 2rem;
+            color: #e74c3c;
+            margin-bottom: 0.5rem;
+        }
+        .alert {
+            border-radius: 8px;
+        }
+        .client-info {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .score-display {
+            text-align: center;
+            padding: 2rem;
+            border-radius: 12px;
+            margin: 1rem 0;
+        }
+        .score-baixo { background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; }
+        .score-medio { background: linear-gradient(135deg, #f39c12, #e67e22); color: white; }
+        .score-alto { background: linear-gradient(135deg, #27ae60, #219150); color: white; }
+        .score-muito-alto { background: linear-gradient(135deg, #2ecc71, #27ae60); color: white; }
+        .score-number {
+            font-size: 3rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        .factors-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+        .factor-item {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .permission-alert {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="form-container">
+    <div class="form-title">
+        <i class="fas fa-calculator icon-header"></i>
+        <h4>Recalcular Score de Crédito</h4>
+        <p class="text-muted">Atualize o score de crédito dos clientes</p>
+    </div>
+
+    <!-- Alerta de Permissão -->
+    <div class="permission-alert">
+        <h6><i class="fas fa-shield-alt text-warning me-2"></i>Acesso Restrito</h6>
+        <p class="mb-0">Esta funcionalidade está disponível apenas para usuários com perfil de <strong>Gerente</strong>.</p>
+    </div>
+
+    <!-- Mensagens -->
+    <div th:if="${sucesso}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fas fa-check-circle me-2"></i>
+        <span th:text="${sucesso}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <div th:if="${erro}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        <span th:text="${erro}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <form action="/funcionario/alteracoes/score" method="post">
+
+        <!-- Busca do Cliente -->
+        <div class="mb-4">
+            <label for="cpfCliente" class="form-label">CPF do Cliente *</label>
+            <div class="input-group">
+                <input type="text" class="form-control" id="cpfCliente" name="cpfCliente" required
+                       placeholder="Digite o CPF do cliente"
+                       pattern="[0-9]{11}" title="Digite 11 números">
+                <button type="button" class="btn btn-outline-primary" onclick="buscarCliente()">
+                    <i class="fas fa-search"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Informações do Cliente -->
+        <div id="clientInfo" class="client-info" style="display: none;">
+            <h5><i class="fas fa-user me-2"></i>Dados do Cliente</h5>
+            <div class="row">
+                <div class="col-md-6">
+                    <table class="table table-sm">
+                        <tr>
+                            <td><strong>Nome:</strong></td>
+                            <td id="infoNome">-</td>
+                        </tr>
+                        <tr>
+                            <td><strong>CPF:</strong></td>
+                            <td id="infoCpf">-</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Data Nasc.:</strong></td>
+                            <td id="infoNascimento">-</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="col-md-6">
+                    <table class="table table-sm">
+                        <tr>
+                            <td><strong>Contas Ativas:</strong></td>
+                            <td id="infoContas">-</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Patrimônio:</strong></td>
+                            <td id="infoPatrimonio">-</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Membro desde:</strong></td>
+                            <td id="infoMembro">-</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Score Atual -->
+        <div id="currentScore" style="display: none;">
+            <h5 class="mb-3">Score Atual</h5>
+            <div class="score-display score-medio">
+                <div class="score-number" id="scoreAtualNumero">650</div>
+                <div class="score-category" id="scoreAtualCategoria">BOM</div>
+                <div class="score-update">Atualizado em: <span id="scoreAtualData">01/01/2024</span></div>
+            </div>
+        </div>
+
+        <!-- Fatores de Análise -->
+        <div id="factorsAnalysis" style="display: none;">
+            <h5 class="mb-3">Fatores de Análise</h5>
+            <div class="factors-grid">
+                <div class="factor-item">
+                    <div class="fw-bold text-primary" id="factorPatrimonio">R$ 25.000</div>
+                    <small class="text-muted">Patrimônio Total</small>
+                </div>
+                <div class="factor-item">
+                    <div class="fw-bold text-success" id="factorRenda">R$ 5.000</div>
+                    <small class="text-muted">Renda Mensal</small>
+                </div>
+                <div class="factor-item">
+                    <div class="fw-bold text-info" id="factorTransacoes">42</div>
+                    <small class="text-muted">Transações/Mês</small>
+                </div>
+                <div class="factor-item">
+                    <div class="fw-bold text-warning" id="factorInadimplencia">0</div>
+                    <small class="text-muted">Inadimplências</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Projeção do Novo Score -->
+        <div id="scoreProjection" style="display: none;">
+            <h5 class="mb-3">Projeção do Novo Score</h5>
+
+            <div class="mb-3">
+                <label class="form-label">Ajustes Manuais (Opcional)</label>
+                <div class="row">
+                    <div class="col-md-6 mb-2">
+                        <label for="ajustePatrimonio" class="form-label small">Ajuste de Patrimônio</label>
+                        <input type="number" class="form-control" id="ajustePatrimonio" name="ajustePatrimonio"
+                               step="1000" placeholder="0">
+                    </div>
+                    <div class="col-md-6 mb-2">
+                        <label for="ajusteRenda" class="form-label small">Ajuste de Renda</label>
+                        <input type="number" class="form-control" id="ajusteRenda" name="ajusteRenda"
+                               step="100" placeholder="0">
+                    </div>
+                </div>
+            </div>
+
+            <div class="score-display score-alto">
+                <div class="score-number" id="scoreProjetadoNumero">720</div>
+                <div class="score-category" id="scoreProjetadoCategoria">MUITO BOM</div>
+                <div class="score-variation">
+                    <i class="fas fa-arrow-up me-1"></i>
+                    <span id="scoreVariacao">+70 pontos</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Configurações do Cálculo -->
+        <div class="mb-3">
+            <label class="form-label">Parâmetros do Cálculo</label>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="incluirTransacoes" name="incluirTransacoes" checked>
+                <label class="form-check-label" for="incluirTransacoes">
+                    Incluir histórico de transações (últimos 6 meses)
+                </label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="considerarPatrimonio" name="considerarPatrimonio" checked>
+                <label class="form-check-label" for="considerarPatrimonio">
+                    Considerar patrimônio total do cliente
+                </label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="analisarComportamento" name="analisarComportamento">
+                <label class="form-check-label" for="analisarComportamento">
+                    Análise de comportamento de pagamento
+                </label>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label for="justificativa" class="form-label">Justificativa do Recalculo *</label>
+            <textarea class="form-control" id="justificativa" name="justificativa" rows="3" required
+                      placeholder="Descreva o motivo do recálculo do score..."></textarea>
+            <div class="form-text">Esta justificativa será registrada no histórico do cliente</div>
+        </div>
+
+        <div class="form-check mb-4">
+            <input class="form-check-input" type="checkbox" id="confirmacao" required>
+            <label class="form-check-label" for="confirmacao">
+                Confirmo que este recálculo está baseado em informações atualizadas e precisas
+            </label>
+        </div>
+
+        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+            <a href="/funcionario/alteracoes" class="btn btn-secondary me-md-2">
+                <i class="fas fa-arrow-left me-1"></i>Cancelar
+            </a>
+            <button type="submit" class="btn btn-danger" id="btnRecalcular" disabled>
+                <i class="fas fa-calculator me-1"></i>Recalcular Score
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+    // Simulação de busca de cliente
+    function buscarCliente() {
+        const cpf = document.getElementById('cpfCliente').value;
+        if (cpf.length === 11) {
+            // Mostrar informações do cliente
+            document.getElementById('clientInfo').style.display = 'block';
+            document.getElementById('infoNome').textContent = 'Ana Carolina Mendes';
+            document.getElementById('infoCpf').textContent = cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+            document.getElementById('infoNascimento').textContent = '22/08/1990';
+            document.getElementById('infoContas').textContent = '2 contas ativas';
+            document.getElementById('infoPatrimonio').textContent = 'R$ 25.000,00';
+            document.getElementById('infoMembro').textContent = 'Mar/2022';
+
+            // Mostrar score atual
+            document.getElementById('currentScore').style.display = 'block';
+
+            // Mostrar fatores de análise
+            document.getElementById('factorsAnalysis').style.display = 'block';
+            document.getElementById('factorPatrimonio').textContent = 'R$ 25.000';
+            document.getElementById('factorRenda').textContent = 'R$ 5.000';
+            document.getElementById('factorTransacoes').textContent = '42';
+            document.getElementById('factorInadimplencia').textContent = '0';
+
+            // Mostrar projeção
+            document.getElementById('scoreProjection').style.display = 'block';
+
+            updateSubmitButton();
+        }
+    }
+
+    // Atualizar projeção baseada nos ajustes
+    function updateScoreProjection() {
+        const ajustePatrimonio = parseFloat(document.getElementById('ajustePatrimonio').value) || 0;
+        const ajusteRenda = parseFloat(document.getElementById('ajusteRenda').value) || 0;
+
+        // Cálculo simplificado do score
+        let novoScore = 650; // Score base
+
+        // Impacto dos ajustes
+        if (ajustePatrimonio > 0) novoScore += Math.min(50, ajustePatrimonio / 1000);
+        if (ajusteRenda > 0) novoScore += Math.min(30, ajusteRenda / 100);
+
+        // Aplicar limites
+        novoScore = Math.min(1000, Math.max(300, novoScore));
+
+        // Atualizar display
+        document.getElementById('scoreProjetadoNumero').textContent = Math.round(novoScore);
+
+        // Categoria do score
+        let categoria = '', classe = '';
+        if (novoScore >= 800) {
+            categoria = 'EXCELENTE';
+            classe = 'score-muito-alto';
+        } else if (novoScore >= 700) {
+            categoria = 'MUITO BOM';
+            classe = 'score-alto';
+        } else if (novoScore >= 600) {
+            categoria = 'BOM';
+            classe = 'score-medio';
+        } else {
+            categoria = 'REGULAR';
+            classe = 'score-baixo';
+        }
+
+        document.getElementById('scoreProjetadoCategoria').textContent = categoria;
+
+        // Atualizar classes CSS
+        const display = document.querySelector('#scoreProjection .score-display');
+        display.className = 'score-display ' + classe;
+
+        // Calcular variação
+        const scoreAtual = 650;
+        const variacao = novoScore - scoreAtual;
+        document.getElementById('scoreVariacao').textContent =
+            (variacao > 0 ? '+' : '') + variacao + ' pontos';
+        document.getElementById('scoreVariacao').className =
+            variacao > 0 ? 'text-success' : variacao < 0 ? 'text-danger' : 'text-muted';
+    }
+
+    // Habilitar botão de recálculo
+    function updateSubmitButton() {
+        const cpfCliente = document.getElementById('cpfCliente').value;
+        const justificativa = document.getElementById('justificativa').value;
+        const confirmacao = document.getElementById('confirmacao').checked;
+
+        document.getElementById('btnRecalcular').disabled = !(cpfCliente && justificativa && confirmacao);
+    }
+
+    // Listeners
+    document.getElementById('ajustePatrimonio').addEventListener('input', updateScoreProjection);
+    document.getElementById('ajusteRenda').addEventListener('input', updateScoreProjection);
+    document.getElementById('confirmacao').addEventListener('change', updateSubmitButton);
+    document.getElementById('justificativa').addEventListener('input', updateSubmitButton);
+
+    // Inicializar projeção
+    document.addEventListener('DOMContentLoaded', updateScoreProjection);
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

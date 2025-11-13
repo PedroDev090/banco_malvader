@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Relatório de Movimentações - Banco Malvader</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .container-custom {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        .filters-section {
+            background: #fff;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 2rem;
+        }
+        .results-section {
+            background: #fff;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .stat-item {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+            border-left: 4px solid #3498db;
+        }
+        .stat-item.depositos { border-left-color: #27ae60; }
+        .stat-item.saques { border-left-color: #e74c3c; }
+        .stat-item.transferencias { border-left-color: #3498db; }
+        .stat-item.taxas { border-left-color: #f39c12; }
+        .transaction-item {
+            border-left: 4px solid #3498db;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            background: #fff;
+            border-radius: 4px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .transaction-item.deposito { border-left-color: #27ae60; }
+        .transaction-item.saque { border-left-color: #e74c3c; }
+        .transaction-item.transferencia { border-left-color: #3498db; }
+        .transaction-item.taxa { border-left-color: #f39c12; }
+        .transaction-item.rendimento { border-left-color: #2ecc71; }
+        .valor-positivo { color: #27ae60; font-weight: bold; }
+        .valor-negativo { color: #e74c3c; font-weight: bold; }
+        .chart-container {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .alert {
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container-custom">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4><i class="fas fa-exchange-alt me-2"></i>Relatório de Movimentações</h4>
+            <p class="text-muted mb-0">Análise detalhada das transações por período</p>
+        </div>
+        <a href="/funcionario/relatorios" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i>Voltar
+        </a>
+    </div>
+
+    <!-- Mensagens -->
+    <div th:if="${sucesso}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fas fa-check-circle me-2"></i>
+        <span th:text="${sucesso}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <div th:if="${erro}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        <span th:text="${erro}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <!-- Filtros -->
+    <div class="filters-section">
+        <h5 class="mb-3"><i class="fas fa-filter me-2"></i>Filtros do Relatório</h5>
+        <form action="/funcionario/relatorios/movimentacoes" method="post">
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label for="dataInicio" class="form-label">Data Início</label>
+                    <input type="date" class="form-control" id="dataInicio" name="dataInicio" required>
+                </div>
+                <div class="col-md-3">
+                    <label for="dataFim" class="form-label">Data Fim</label>
+                    <input type="date" class="form-control" id="dataFim" name="dataFim" required>
+                </div>
+                <div class="col-md-3">
+                    <label for="tipoTransacao" class="form-label">Tipo de Transação</label>
+                    <select class="form-select" id="tipoTransacao" name="tipoTransacao">
+                        <option value="">Todos os tipos</option>
+                        <option value="DEPOSITO">Depósitos</option>
+                        <option value="SAQUE">Saques</option>
+                        <option value="TRANSFERENCIA">Transferências</option>
+                        <option value="TAXA">Taxas</option>
+                        <option value="RENDIMENTO">Rendimentos</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label for="agencia" class="form-label">Agência</label>
+                    <select class="form-select" id="agencia" name="agencia">
+                        <option value="">Todas as agências</option>
+                        <option value="001">001 - Centro</option>
+                        <option value="002">002 - Norte</option>
+                        <option value="003">003 - Sul</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="row mt-3">
+                <div class="col-md-4">
+                    <label for="valorMinimo" class="form-label">Valor Mínimo (R$)</label>
+                    <input type="number" class="form-control" id="valorMinimo" name="valorMinimo"
+                           step="0.01" min="0" placeholder="0,00">
+                </div>
+                <div class="col-md-4">
+                    <label for="valorMaximo" class="form-label">Valor Máximo (R$)</label>
+                    <input type="number" class="form-control" id="valorMaximo" name="valorMaximo"
+                           step="0.01" min="0" placeholder="100.000,00">
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-chart-bar me-1"></i>Gerar Relatório
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Estatísticas -->
+    <div th:if="${estatisticas}" class="stats-grid">
+        <div class="stat-item depositos">
+            <div class="fw-bold text-success" th:text="'R$ ' + ${#numbers.formatDecimal(estatisticas.totalDepositos, 1, 2, 'POINT')}">R$ 0,00</div>
+            <small class="text-muted">Total em Depósitos</small>
+            <div class="small" th:text="${estatisticas.quantidadeDepositos} + ' transações'">0 transações</div>
+        </div>
+        <div class="stat-item saques">
+            <div class="fw-bold text-danger" th:text="'R$ ' + ${#numbers.formatDecimal(estatisticas.totalSaques, 1, 2, 'POINT')}">R$ 0,00</div>
+            <small class="text-muted">Total em Saques</small>
+            <div class="small" th:text="${estatisticas.quantidadeSaques} + ' transações'">0 transações</div>
+        </div>
+        <div class="stat-item transferencias">
+            <div class="fw-bold text-primary" th:text="'R$ ' + ${#numbers.formatDecimal(estatisticas.totalTransferencias, 1, 2, 'POINT')}">R$ 0,00</div>
+            <small class="text-muted">Total em Transferências</small>
+            <div class="small" th:text="${estatisticas.quantidadeTransferencias} + ' transações'">0 transações</div>
+        </div>
+        <div class="stat-item taxas">
+            <div class="fw-bold text-warning" th:text="'R$ ' + ${#numbers.formatDecimal(estatisticas.totalTaxas, 1, 2, 'POINT')}">R$ 0,00</div>
+            <small class="text-muted">Total em Taxas</small>
+            <div class="small" th:text="${estatisticas.quantidadeTaxas} + ' transações'">0 transações</div>
+        </div>
+    </div>
+
+    <!-- Gráfico (Placeholder) -->
+    <div th:if="${estatisticas}" class="chart-container">
+        <div class="text-center text-muted">
+            <i class="fas fa-chart-bar fa-3x mb-3 opacity-50"></i>
+            <p>Gráfico de Movimentações por Tipo</p>
+            <small class="text-muted">
+                Em uma implementação real, aqui seria exibido um gráfico<br>
+                com a distribuição das transações por tipo e valor
+            </small>
+        </div>
+    </div>
+
+    <!-- Lista de Transações -->
+    <div class="results-section">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h5><i class="fas fa-list me-2"></i>Transações</h5>
+            <div class="text-muted" th:if="${transacoes}">
+                <span th:text="${transacoes.size()} + ' transações encontradas'"></span>
+            </div>
+        </div>
+
+        <div th:if="${transacoes != null and !transacoes.empty}">
+            <div th:each="transacao : ${transacoes}"
+                 th:classappend="'transaction-item ' +
+                                (${transacao.tipoTransacao.name()} == 'DEPOSITO' ? 'deposito' :
+                                 ${transacao.tipoTransacao.name()} == 'SAQUE' ? 'saque' :
+                                 ${transacao.tipoTransacao.name()} == 'TRANSFERENCIA' ? 'transferencia' :
+                                 ${transacao.tipoTransacao.name()} == 'TAXA' ? 'taxa' : 'rendimento')">
+                <div class="row align-items-center">
+                    <div class="col-md-2">
+                        <strong th:text="${transacao.tipoTransacao.name()}"></strong>
+                        <div class="text-muted small" th:text="${#temporals.format(transacao.dataHora, 'dd/MM/yyyy')}"></div>
+                    </div>
+                    <div class="col-md-2">
+                        <span class="text-muted">Conta Origem</span>
+                        <div th:if="${transacao.contaOrigem}" th:text="${transacao.contaOrigem.numeroConta}"></div>
+                        <div th:unless="${transacao.contaOrigem}" class="text-muted">-</div>
+                    </div>
+                    <div class="col-md-2">
+                        <span class="text-muted">Conta Destino</span>
+                        <div th:if="${transacao.contaDestino}" th:text="${transacao.contaDestino.numeroConta}"></div>
+                        <div th:unless="${transacao.contaDestino}" class="text-muted">-</div>
+                    </div>
+                    <div class="col-md-3">
+                        <span class="text-muted">Descrição</span>
+                        <div th:text="${transacao.descricao}"></div>
+                    </div>
+                    <div class="col-md-2">
+                        <span class="text-muted">Valor</span>
+                        <div th:classappend="(${transacao.tipoTransacao.name()} == 'DEPOSITO' or
+                                              ${transacao.tipoTransacao.name()} == 'RENDIMENTO') ? 'valor-positivo' : 'valor-negativo'"
+                             th:text="((${transacao.tipoTransacao.name()} == 'DEPOSITO' or
+                                       ${transacao.tipoTransacao.name()} == 'RENDIMENTO') ? '+ ' : '- ') +
+                                       'R$ ' + ${#numbers.formatDecimal(transacao.valor, 1, 2, 'POINT')}">
+                        </div>
+                    </div>
+                    <div class="col-md-1">
+                        <span class="text-muted">Hora</span>
+                        <div th:text="${#temporals.format(transacao.dataHora, 'HH:mm')}"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Paginação -->
+            <nav class="mt-4" th:if="${totalPaginas > 1}">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item" th:classappend="${paginaAtual == 1} ? 'disabled'">
+                        <a class="page-link" th:href="@{/funcionario/relatorios/movimentacoes(pagina=${paginaAtual - 1})}">Anterior</a>
+                    </li>
+                    <li th:each="i : ${#numbers.sequence(1, totalPaginas)}"
+                        class="page-item" th:classappend="${i == paginaAtual} ? 'active'">
+                        <a class="page-link" th:href="@{/funcionario/relatorios/movimentacoes(pagina=${i})}" th:text="${i}"></a>
+                    </li>
+                    <li class="page-item" th:classappend="${paginaAtual == totalPaginas} ? 'disabled'">
+                        <a class="page-link" th:href="@{/funcionario/relatorios/movimentacoes(pagina=${paginaAtual + 1})}">Próxima</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+
+        <div th:if="${transacoes != null and transacoes.empty}" class="alert alert-info">
+            <i class="fas fa-info-circle me-2"></i>
+            Nenhuma transação encontrada com os filtros aplicados.
+        </div>
+
+        <div th:if="${transacoes == null}" class="text-center text-muted py-5">
+            <i class="fas fa-chart-bar fa-3x mb-3 opacity-50"></i>
+            <p>Use os filtros acima para gerar o relatório de movimentações</p>
+        </div>
+    </div>
+
+    <!-- Ações -->
+    <div class="text-center mt-4">
+        <button class="btn btn-outline-primary me-2" onclick="window.print()">
+            <i class="fas fa-print me-1"></i>Imprimir Relatório
+        </button>
+        <button class="btn btn-outline-success me-2" onclick="exportToCSV()">
+            <i class="fas fa-file-csv me-1"></i>Exportar CSV
+        </button>
+        <button class="btn btn-outline-info" onclick="exportToPDF()">
+            <i class="fas fa-file-pdf me-1"></i>Exportar PDF
+        </button>
+    </div>
+</div>
+
+<script>
+    // Set default dates (last 30 days)
+    document.addEventListener('DOMContentLoaded', function() {
+        const hoje = new Date();
+        const umMesAtras = new Date();
+        umMesAtras.setDate(hoje.getDate() - 30);
+
+        document.getElementById('dataInicio').value = umMesAtras.toISOString().split('T')[0];
+        document.getElementById('dataFim').value = hoje.toISOString().split('T')[0];
+    });
+
+    // Validação de datas
+    document.getElementById('dataFim').addEventListener('change', function() {
+        const inicio = new Date(document.getElementById('dataInicio').value);
+        const fim = new Date(this.value);
+
+        if (fim < inicio) {
+            alert('A data fim não pode ser anterior à data início');
+            this.value = document.getElementById('dataInicio').value;
+        }
+
+        // Limitar período máximo a 1 ano
+        const diffTime = fim - inicio;
+        const diffDays = diffTime / (1000 * 60 * 60 * 24);
+        if (diffDays > 365) {
+            alert('O período máximo permitido é de 1 ano');
+            const novaDataFim = new Date(inicio);
+            novaDataFim.setFullYear(inicio.getFullYear() + 1);
+            this.value = novaDataFim.toISOString().split('T')[0];
+        }
+    });
+
+    // Funções de exportação (simuladas)
+    function exportToCSV() {
+        alert('Funcionalidade de exportação CSV será implementada');
+    }
+
+    function exportToPDF() {
+        alert('Funcionalidade de exportação PDF será implementada');
+    }
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

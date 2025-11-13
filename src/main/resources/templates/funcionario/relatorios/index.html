@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Relatórios - Banco Malvader</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .container-custom {
+            max-width: 1000px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+        .page-title {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        .report-card {
+            background: #fff;
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            padding: 2rem;
+            text-align: center;
+            height: 100%;
+            cursor: pointer;
+            border-top: 4px solid #3498db;
+        }
+        .report-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.15);
+        }
+        .report-card.primary { border-top-color: #3498db; }
+        .report-card.success { border-top-color: #27ae60; }
+        .report-card.danger { border-top-color: #e74c3c; }
+        .report-card.warning { border-top-color: #f39c12; }
+        .report-card.info { border-top-color: #17a2b8; }
+        .report-card.purple { border-top-color: #8e44ad; }
+        .report-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        .alert {
+            border-radius: 8px;
+        }
+        .permission-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 0.7rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container-custom">
+    <!-- Header -->
+    <div class="page-title">
+        <h2><i class="fas fa-chart-bar me-2"></i>Relatórios</h2>
+        <p class="text-muted">Acesse relatórios e análises do sistema</p>
+    </div>
+
+    <!-- Mensagens -->
+    <div th:if="${sucesso}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fas fa-check-circle me-2"></i>
+        <span th:text="${sucesso}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <div th:if="${erro}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        <span th:text="${erro}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <!-- Cards de Relatórios -->
+    <div class="row g-4">
+        <!-- Relatório de Movimentações -->
+        <div class="col-md-4">
+            <div class="report-card primary position-relative" onclick="location.href='/funcionario/relatorios/movimentacoes'">
+                <div class="permission-badge">
+                    <span class="badge bg-success">Todos</span>
+                </div>
+                <i class="fas fa-exchange-alt report-icon text-primary"></i>
+                <h5>Movimentações</h5>
+                <p class="text-muted">Transações por período</p>
+                <small class="text-primary">
+                    <i class="fas fa-arrow-right me-1"></i>Acessar
+                </small>
+            </div>
+        </div>
+
+        <!-- Relatório de Inadimplentes -->
+        <div class="col-md-4">
+            <div class="report-card danger position-relative" onclick="location.href='/funcionario/relatorios/inadimplentes'">
+                <div class="permission-badge">
+                    <span class="badge bg-success">Todos</span>
+                </div>
+                <i class="fas fa-exclamation-triangle report-icon text-danger"></i>
+                <h5>Inadimplentes</h5>
+                <p class="text-muted">Clientes em débito</p>
+                <small class="text-danger">
+                    <i class="fas fa-arrow-right me-1"></i>Acessar
+                </small>
+            </div>
+        </div>
+
+        <!-- Relatório de Desempenho -->
+        <div class="col-md-4">
+            <div class="report-card success position-relative" onclick="location.href='/funcionario/relatorios/desempenho'">
+                <div class="permission-badge">
+                    <span class="badge bg-warning">Gerente</span>
+                </div>
+                <i class="fas fa-chart-line report-icon text-success"></i>
+                <h5>Desempenho</h5>
+                <p class="text-muted">Métricas e indicadores</p>
+                <small class="text-success">
+                    <i class="fas fa-arrow-right me-1"></i>Acessar
+                </small>
+            </div>
+        </div>
+
+        <!-- Relatório de Contas -->
+        <div class="col-md-4">
+            <div class="report-card info position-relative" onclick="location.href='/funcionario/relatorios/contas'">
+                <div class="permission-badge">
+                    <span class="badge bg-success">Todos</span>
+                </div>
+                <i class="fas fa-wallet report-icon text-info"></i>
+                <h5>Contas</h5>
+                <p class="text-muted">Relatório de contas ativas</p>
+                <small class="text-info">
+                    <i class="fas fa-arrow-right me-1"></i>Acessar
+                </small>
+            </div>
+        </div>
+
+        <!-- Relatório de Clientes -->
+        <div class="col-md-4">
+            <div class="report-card warning position-relative" onclick="location.href='/funcionario/relatorios/clientes'">
+                <div class="permission-badge">
+                    <span class="badge bg-success">Todos</span>
+                </div>
+                <i class="fas fa-users report-icon text-warning"></i>
+                <h5>Clientes</h5>
+                <p class="text-muted">Base de clientes</p>
+                <small class="text-warning">
+                    <i class="fas fa-arrow-right me-1"></i>Acessar
+                </small>
+            </div>
+        </div>
+
+        <!-- Relatório Financeiro -->
+        <div class="col-md-4">
+            <div class="report-card purple position-relative" onclick="location.href='/funcionario/relatorios/financeiro'">
+                <div class="permission-badge">
+                    <span class="badge bg-warning">Gerente</span>
+                </div>
+                <i class="fas fa-money-bill-wave report-icon text-purple"></i>
+                <h5>Financeiro</h5>
+                <p class="text-muted">Resultados financeiros</p>
+                <small class="text-purple">
+                    <i class="fas fa-arrow-right me-1"></i>Acessar
+                </small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ações Rápidas -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title"><i class="fas fa-bolt me-2"></i>Ações Rápidas</h5>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <button class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-download me-1"></i>Exportar Todos
+                        </button>
+                        <button class="btn btn-outline-success btn-sm">
+                            <i class="fas fa-sync me-1"></i>Atualizar Dados
+                        </button>
+                        <button class="btn btn-outline-info btn-sm" onclick="window.print()">
+                            <i class="fas fa-print me-1"></i>Imprimir
+                        </button>
+                        <button class="btn btn-outline-warning btn-sm">
+                            <i class="fas fa-cog me-1"></i>Configurações
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Botão Voltar -->
+    <div class="text-center mt-4">
+        <a href="/funcionario/dashboard" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i>Voltar ao Dashboard
+        </a>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

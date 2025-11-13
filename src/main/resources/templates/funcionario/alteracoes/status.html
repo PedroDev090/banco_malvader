@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Alterar Status - Banco Malvader</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .form-container {
+            max-width: 700px;
+            margin: 2rem auto;
+            background: #fff;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+        }
+        .form-title {
+            text-align: center;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid #17a2b8;
+            padding-bottom: 1rem;
+        }
+        .btn-info {
+            background-color: #17a2b8;
+            border-color: #17a2b8;
+            font-weight: 600;
+        }
+        .btn-info:hover {
+            background-color: #138496;
+            border-color: #138496;
+        }
+        .icon-header {
+            font-size: 2rem;
+            color: #17a2b8;
+            margin-bottom: 0.5rem;
+        }
+        .alert {
+            border-radius: 8px;
+        }
+        .account-info {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .status-card {
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .status-card:hover {
+            transform: translateY(-2px);
+        }
+        .status-ativa {
+            background: #d4edda;
+            border: 2px solid #c3e6cb;
+        }
+        .status-bloqueada {
+            background: #fff3cd;
+            border: 2px solid #ffeaa7;
+        }
+        .status-encerrada {
+            background: #f8d7da;
+            border: 2px solid #f5c6cb;
+        }
+        .warning-box {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="form-container">
+    <div class="form-title">
+        <i class="fas fa-exchange-alt icon-header"></i>
+        <h4>Alteração de Status</h4>
+        <p class="text-muted">Bloqueie, desbloqueie ou encerre contas</p>
+    </div>
+
+    <!-- Mensagens -->
+    <div th:if="${sucesso}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fas fa-check-circle me-2"></i>
+        <span th:text="${sucesso}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <div th:if="${erro}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        <span th:text="${erro}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <!-- Aviso Importante -->
+    <div class="warning-box">
+        <h6><i class="fas fa-exclamation-triangle text-warning me-2"></i>Atenção</h6>
+        <p class="mb-2">Alterações de status podem impactar o acesso do cliente aos serviços bancários.</p>
+        <small class="text-muted">
+            • Contas bloqueadas não permitem saques ou transferências<br>
+            • Contas encerradas não podem ser reativadas<br>
+            • Notifique o cliente sobre qualquer alteração
+        </small>
+    </div>
+
+    <form action="/funcionario/alteracoes/status" method="post">
+
+        <!-- Busca da Conta -->
+        <div class="mb-4">
+            <label for="numeroConta" class="form-label">Número da Conta *</label>
+            <input type="text" class="form-control" id="numeroConta" name="numeroConta" required
+                   placeholder="Digite o número da conta">
+        </div>
+
+        <!-- Informações da Conta -->
+        <div id="accountInfo" class="account-info" style="display: none;">
+            <h6>Informações da Conta</h6>
+            <div class="row">
+                <div class="col-md-6">
+                    <small class="text-muted">Cliente</small>
+                    <div id="infoCliente">-</div>
+                </div>
+                <div class="col-md-3">
+                    <small class="text-muted">Tipo</small>
+                    <div id="infoTipo">-</div>
+                </div>
+                <div class="col-md-3">
+                    <small class="text-muted">Saldo</small>
+                    <div id="infoSaldo">-</div>
+                </div>
+            </div>
+            <div class="row mt-2">
+                <div class="col-md-6">
+                    <small class="text-muted">Status Atual</small>
+                    <div>
+                        <span id="infoStatus" class="badge bg-success">ATIVA</span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <small class="text-muted">Data Abertura</small>
+                    <div id="infoAbertura">-</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Seleção do Novo Status -->
+        <div class="mb-4">
+            <label class="form-label mb-3">Novo Status *</label>
+
+            <div class="status-card status-ativa" onclick="selectStatus('ATIVA')">
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="novoStatus" id="statusAtiva" value="ATIVA" required>
+                    <label class="form-check-label fw-bold" for="statusAtiva">
+                        <i class="fas fa-check-circle text-success me-2"></i>Ativar Conta
+                    </label>
+                </div>
+                <small class="text-muted">Conta funcionando normalmente com todos os serviços disponíveis</small>
+            </div>
+
+            <div class="status-card status-bloqueada" onclick="selectStatus('BLOQUEADA')">
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="novoStatus" id="statusBloqueada" value="BLOQUEADA">
+                    <label class="form-check-label fw-bold" for="statusBloqueada">
+                        <i class="fas fa-lock text-warning me-2"></i>Bloquear Conta
+                    </label>
+                </div>
+                <small class="text-muted">Conta temporariamente suspensa - permite apenas consultas</small>
+            </div>
+
+            <div class="status-card status-encerrada" onclick="selectStatus('ENCERRADA')">
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="novoStatus" id="statusEncerrada" value="ENCERRADA">
+                    <label class="form-check-label fw-bold" for="statusEncerrada">
+                        <i class="fas fa-times-circle text-danger me-2"></i>Encerrar Conta
+                    </label>
+                </div>
+                <small class="text-muted">Encerramento definitivo - requer saldo zero e aprovação</small>
+            </div>
+        </div>
+
+        <!-- Motivo e Justificativa -->
+        <div class="mb-3">
+            <label for="motivo" class="form-label">Motivo da Alteração *</label>
+            <select class="form-select" id="motivo" name="motivo" required>
+                <option value="">Selecione o motivo...</option>
+                <option value="SUSPEITA_FRAUDE">Suspeita de Fraude</option>
+                <option value="INADIMPLENCIA">Inadimplência</option>
+                <option value="SOLICITACAO_CLIENTE">Solicitação do Cliente</option>
+                <option value="PROBLEMAS_TECNICOS">Problemas Técnicos</option>
+                <option value="ATUALIZACAO_CADASTRO">Atualização de Cadastro</option>
+                <option value="OUTROS">Outros</option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label for="justificativa" class="form-label">Justificativa Detalhada *</label>
+            <textarea class="form-control" id="justificativa" name="justificativa" rows="3" required
+                      placeholder="Descreva detalhadamente o motivo da alteração de status..."></textarea>
+            <div class="form-text">Esta justificativa será registrada no histórico da conta</div>
+        </div>
+
+        <!-- Confirmações Adicionais -->
+        <div id="confirmacaoEncerramento" style="display: none;">
+            <div class="alert alert-warning">
+                <h6><i class="fas fa-exclamation-triangle me-2"></i>Confirmação de Encerramento</h6>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="confirmSaldoZero">
+                    <label class="form-check-label" for="confirmSaldoZero">
+                        Confirmo que a conta está com saldo zero
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="confirmClienteNotificado">
+                    <label class="form-check-label" for="confirmClienteNotificado">
+                        Confirmo que o cliente foi notificado sobre o encerramento
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-check mb-4">
+            <input class="form-check-input" type="checkbox" id="confirmacaoGeral" required>
+            <label class="form-check-label" for="confirmacaoGeral">
+                Confirmo que esta alteração está de acordo com as políticas do banco
+            </label>
+        </div>
+
+        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+            <a href="/funcionario/alteracoes" class="btn btn-secondary me-md-2">
+                <i class="fas fa-arrow-left me-1"></i>Cancelar
+            </a>
+            <button type="submit" class="btn btn-info" id="btnAlterar" disabled>
+                <i class="fas fa-check-circle me-1"></i>Aplicar Alteração
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+    // Simulação de busca de conta
+    document.getElementById('numeroConta').addEventListener('blur', function() {
+        const numeroConta = this.value;
+        if (numeroConta.length > 5) {
+            document.getElementById('accountInfo').style.display = 'block';
+            document.getElementById('infoCliente').textContent = 'Maria Santos Silva';
+            document.getElementById('infoTipo').textContent = 'Corrente';
+            document.getElementById('infoSaldo').textContent = 'R$ 1.250,00';
+            document.getElementById('infoAbertura').textContent = '15/03/2023';
+        }
+    });
+
+    // Selecionar status
+    function selectStatus(status) {
+        document.querySelectorAll('.status-card').forEach(card => {
+            card.style.opacity = '0.7';
+        });
+        event.currentTarget.style.opacity = '1';
+
+        // Mostrar confirmações adicionais para encerramento
+        if (status === 'ENCERRADA') {
+            document.getElementById('confirmacaoEncerramento').style.display = 'block';
+        } else {
+            document.getElementById('confirmacaoEncerramento').style.display = 'none';
+        }
+
+        updateSubmitButton();
+    }
+
+    // Atualizar botão de envio
+    function updateSubmitButton() {
+        const numeroConta = document.getElementById('numeroConta').value;
+        const novoStatus = document.querySelector('input[name="novoStatus"]:checked');
+        const motivo = document.getElementById('motivo').value;
+        const justificativa = document.getElementById('justificativa').value;
+        const confirmacaoGeral = document.getElementById('confirmacaoGeral').checked;
+
+        let encerramentoOk = true;
+        if (novoStatus && novoStatus.value === 'ENCERRADA') {
+            const saldoZero = document.getElementById('confirmSaldoZero').checked;
+            const clienteNotificado = document.getElementById('confirmClienteNotificado').checked;
+            encerramentoOk = saldoZero && clienteNotificado;
+        }
+
+        document.getElementById('btnAlterar').disabled = !(
+            numeroConta &&
+            novoStatus &&
+            motivo &&
+            justificativa &&
+            confirmacaoGeral &&
+            encerramentoOk
+        );
+    }
+
+    // Listeners para atualizar o botão
+    document.getElementById('confirmacaoGeral').addEventListener('change', updateSubmitButton);
+    document.getElementById('motivo').addEventListener('change', updateSubmitButton);
+    document.getElementById('justificativa').addEventListener('input', updateSubmitButton);
+    document.getElementById('numeroConta').addEventListener('input', updateSubmitButton);
+
+    // Listeners para encerramento
+    document.getElementById('confirmSaldoZero')?.addEventListener('change', updateSubmitButton);
+    document.getElementById('confirmClienteNotificado')?.addEventListener('change', updateSubmitButton);
+
+    // Auto-selecionar ao clicar no card
+    document.querySelectorAll('.status-card').forEach(card => {
+        card.addEventListener('click', function() {
+            const radio = this.querySelector('input[type="radio"]');
+            if (radio) {
+                radio.checked = true;
+                selectStatus(radio.value);
+            }
+        });
+    });
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

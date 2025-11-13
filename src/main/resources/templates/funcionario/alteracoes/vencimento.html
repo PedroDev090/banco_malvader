@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Alterar Vencimento - Banco Malvader</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .form-container {
+            max-width: 600px;
+            margin: 2rem auto;
+            background: #fff;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+        }
+        .form-title {
+            text-align: center;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid #6f42c1;
+            padding-bottom: 1rem;
+        }
+        .btn-primary {
+            background-color: #6f42c1;
+            border-color: #6f42c1;
+            font-weight: 600;
+        }
+        .btn-primary:hover {
+            background-color: #5a359c;
+            border-color: #5a359c;
+        }
+        .icon-header {
+            font-size: 2rem;
+            color: #6f42c1;
+            margin-bottom: 0.5rem;
+        }
+        .alert {
+            border-radius: 8px;
+        }
+        .account-info {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .date-preview {
+            background: #e3f2fd;
+            border: 2px dashed #3498db;
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+            margin-top: 1rem;
+        }
+        .calendar-suggestions {
+            background: #fff3cd;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="form-container">
+    <div class="form-title">
+        <i class="fas fa-calendar-alt icon-header"></i>
+        <h4>Alteração de Data de Vencimento</h4>
+        <p class="text-muted">Ajuste a data de vencimento de contas correntes</p>
+    </div>
+
+    <!-- Mensagens -->
+    <div th:if="${sucesso}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fas fa-check-circle me-2"></i>
+        <span th:text="${sucesso}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <div th:if="${erro}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        <span th:text="${erro}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <!-- Sugestões de Datas -->
+    <div class="calendar-suggestions">
+        <h6><i class="fas fa-lightbulb me-2"></i>Sugestões de Datas</h6>
+        <div class="d-flex gap-2 flex-wrap">
+            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setSuggestedDate(30)">
+                +30 dias
+            </button>
+            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setSuggestedDate(90)">
+                +90 dias
+            </button>
+            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setSuggestedDate(180)">
+                +6 meses
+            </button>
+            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setSuggestedDate(365)">
+                +1 ano
+            </button>
+            <button type="button" class="btn btn-outline-secondary btn-sm" onclick="setLastDayOfMonth()">
+                Último dia do mês
+            </button>
+        </div>
+    </div>
+
+    <form action="/funcionario/alteracoes/vencimento" method="post">
+
+        <!-- Busca da Conta -->
+        <div class="mb-3">
+            <label for="numeroConta" class="form-label">Número da Conta Corrente *</label>
+            <input type="text" class="form-control" id="numeroConta" name="numeroConta" required
+                   placeholder="Digite o número da conta">
+            <div class="form-text">Apenas contas correntes possuem data de vencimento</div>
+        </div>
+
+        <!-- Informações da Conta -->
+        <div id="accountInfo" class="account-info" style="display: none;">
+            <h6>Informações da Conta</h6>
+            <div class="row">
+                <div class="col-md-6">
+                    <small class="text-muted">Cliente</small>
+                    <div id="infoCliente">-</div>
+                </div>
+                <div class="col-md-6">
+                    <small class="text-muted">Vencimento Atual</small>
+                    <div id="infoVencimentoAtual">-</div>
+                </div>
+            </div>
+            <div class="row mt-2">
+                <div class="col-md-6">
+                    <small class="text-muted">Status</small>
+                    <div id="infoStatus">-</div>
+                </div>
+                <div class="col-md-6">
+                    <small class="text-muted">Dias Restantes</small>
+                    <div id="infoDiasRestantes">-</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Nova Data de Vencimento -->
+        <div class="mb-3">
+            <label for="novaDataVencimento" class="form-label">Nova Data de Vencimento *</label>
+            <input type="date" class="form-control" id="novaDataVencimento" name="novaDataVencimento" required
+                   min="">
+            <div class="form-text">A data deve ser futura em relação à data atual</div>
+        </div>
+
+        <!-- Pré-visualização -->
+        <div id="previewSection" class="date-preview" style="display: none;">
+            <h6>Pré-visualização da Alteração</h6>
+            <div class="row text-center">
+                <div class="col-6">
+                    <small class="text-muted">Vencimento Atual</small>
+                    <div id="previewAtual" class="fw-bold">-</div>
+                </div>
+                <div class="col-6">
+                    <small class="text-muted">Novo Vencimento</small>
+                    <div id="previewNovo" class="fw-bold text-success">-</div>
+                </div>
+            </div>
+            <div class="mt-2">
+                <small class="text-muted">Diferença:</small>
+                <span id="previewDiferenca" class="fw-bold">-</span>
+            </div>
+        </div>
+
+        <!-- Motivo da Alteração -->
+        <div class="mb-3">
+            <label for="motivo" class="form-label">Motivo da Alteração *</label>
+            <select class="form-select" id="motivo" name="motivo" required>
+                <option value="">Selecione o motivo...</option>
+                <option value="SOLICITACAO_CLIENTE">Solicitação do Cliente</option>
+                <option value="PROMOCAO_COMERCIAL">Promoção Comercial</option>
+                <option value="AJUSTE_OPERACIONAL">Ajuste Operacional</option>
+                <option value="RENEGOCIACAO">Renegociação</option>
+                <option value="OUTROS">Outros</option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label for="justificativa" class="form-label">Justificativa Detalhada</label>
+            <textarea class="form-control" id="justificativa" name="justificativa" rows="3"
+                      placeholder="Detalhes adicionais sobre a alteração..."></textarea>
+        </div>
+
+        <div class="form-check mb-4">
+            <input class="form-check-input" type="checkbox" id="confirmacao" required>
+            <label class="form-check-label" for="confirmacao">
+                Confirmo que o cliente foi informado sobre a alteração da data de vencimento
+            </label>
+        </div>
+
+        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+            <a href="/funcionario/alteracoes" class="btn btn-secondary me-md-2">
+                <i class="fas fa-arrow-left me-1"></i>Cancelar
+            </a>
+            <button type="submit" class="btn btn-primary" id="btnAlterar" disabled>
+                <i class="fas fa-check-circle me-1"></i>Alterar Vencimento
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+    // Set minimum date to tomorrow
+    document.addEventListener('DOMContentLoaded', function() {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        document.getElementById('novaDataVencimento').min = tomorrow.toISOString().split('T')[0];
+    });
+
+    // Simulação de busca de conta
+    document.getElementById('numeroConta').addEventListener('blur', function() {
+        const numeroConta = this.value;
+        if (numeroConta.length > 5) {
+            document.getElementById('accountInfo').style.display = 'block';
+            document.getElementById('infoCliente').textContent = 'Carlos Eduardo Lima';
+
+            // Data de vencimento atual (exemplo: 3 meses a partir de hoje)
+            const vencimentoAtual = new Date();
+            vencimentoAtual.setMonth(vencimentoAtual.getMonth() + 3);
+            document.getElementById('infoVencimentoAtual').textContent =
+                vencimentoAtual.toLocaleDateString('pt-BR');
+            document.getElementById('previewAtual').textContent =
+                vencimentoAtual.toLocaleDateString('pt-BR');
+
+            document.getElementById('infoStatus').innerHTML = '<span class="badge bg-success">ATIVA</span>';
+
+            // Calcular dias restantes
+            const hoje = new Date();
+            const diffTime = vencimentoAtual - hoje;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            document.getElementById('infoDiasRestantes').textContent = diffDays + ' dias';
+        }
+    });
+
+    // Atualizar pré-visualização
+    document.getElementById('novaDataVencimento').addEventListener('change', function() {
+        const novaData = new Date(this.value);
+        const vencimentoAtual = new Date();
+        vencimentoAtual.setMonth(vencimentoAtual.getMonth() + 3); // Data atual de exemplo
+
+        if (this.value) {
+            document.getElementById('previewSection').style.display = 'block';
+            document.getElementById('previewNovo').textContent =
+                novaData.toLocaleDateString('pt-BR');
+
+            // Calcular diferença em dias
+            const diffTime = novaData - vencimentoAtual;
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            let diferencaTexto = Math.abs(diffDays) + ' dias ';
+            diferencaTexto += diffDays > 0 ? 'a mais' : 'a menos';
+
+            document.getElementById('previewDiferenca').textContent = diferencaTexto;
+            document.getElementById('previewDiferenca').className =
+                diffDays > 0 ? 'fw-bold text-success' :
+                diffDays < 0 ? 'fw-bold text-danger' : 'fw-bold text-muted';
+        }
+    });
+
+    // Sugestões de datas
+    function setSuggestedDate(dias) {
+        const novaData = new Date();
+        novaData.setDate(novaData.getDate() + dias);
+        document.getElementById('novaDataVencimento').value = novaData.toISOString().split('T')[0];
+        document.getElementById('novaDataVencimento').dispatchEvent(new Event('change'));
+    }
+
+    function setLastDayOfMonth() {
+        const hoje = new Date();
+        const ultimoDia = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0);
+        document.getElementById('novaDataVencimento').value = ultimoDia.toISOString().split('T')[0];
+        document.getElementById('novaDataVencimento').dispatchEvent(new Event('change'));
+    }
+
+    // Habilitar botão de alteração
+    document.getElementById('confirmacao').addEventListener('change', function() {
+        const numeroConta = document.getElementById('numeroConta').value;
+        const novaData = document.getElementById('novaDataVencimento').value;
+        const motivo = document.getElementById('motivo').value;
+        const confirmacao = this.checked;
+
+        document.getElementById('btnAlterar').disabled = !(numeroConta && novaData && motivo && confirmacao);
+    });
+
+    // Validar outros campos
+    document.getElementById('motivo').addEventListener('change', function() {
+        document.getElementById('confirmacao').dispatchEvent(new Event('change'));
+    });
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

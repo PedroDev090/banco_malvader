@@ -31,7 +31,6 @@ public class AuthController {
      */
     @GetMapping("/login")
     public String loginPage(Model model, HttpSession session) {
-        // Se já estiver logado, redirecionar para o dashboard apropriado
         if (session.getAttribute("usuarioLogado") != null) {
             return determinarRedirectPorTipoUsuario(session);
         }
@@ -52,9 +51,7 @@ public class AuthController {
         LoginResponseDTO resultado = authService.autenticar(loginDTO);
 
         if (resultado.isSucesso()) {
-            // Salvar dados na sessão
             salvarDadosSessao(session, resultado);
-
             redirectAttributes.addFlashAttribute("sucesso", "Login realizado com sucesso!");
             return "redirect:" + resultado.getRedirectUrl();
         } else {
@@ -75,7 +72,7 @@ public class AuthController {
     }
 
     /**
-     * Endpoint para verificar CPF via AJAX
+     * Verificar CPF via AJAX
      */
     @GetMapping("/verificar-cpf")
     @ResponseBody
@@ -93,7 +90,16 @@ public class AuthController {
      */
     @GetMapping("/acesso-negado")
     public String acessoNegado() {
-        return "auth/acesso-negado";
+        return "auth/acessonegado";
+    }
+
+    /**
+     * Teste simples para verificar se o servidor responde
+     */
+    @GetMapping("/teste")
+    @ResponseBody
+    public String teste() {
+        return "Servidor está respondendo!";
     }
 
     /**
@@ -106,7 +112,6 @@ public class AuthController {
         session.setAttribute("tipoUsuario", resultado.getTipoUsuario());
         session.setAttribute("cargo", resultado.getCargo());
 
-        // Criar DTO de sessão para facilitar acesso
         UsuarioSessaoDTO usuarioSessao = new UsuarioSessaoDTO();
         usuarioSessao.setIdUsuario(resultado.getIdUsuario());
         usuarioSessao.setNome(resultado.getNome());
@@ -117,7 +122,7 @@ public class AuthController {
     }
 
     /**
-     * Determina redirect baseado no tipo de usuário na sessão
+     * Redireciona conforme o tipo de usuário
      */
     private String determinarRedirectPorTipoUsuario(HttpSession session) {
         String tipoUsuario = (String) session.getAttribute("tipoUsuario");
