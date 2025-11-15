@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Cadastro de Funcionário - Banco Malvader</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .form-container {
+            max-width: 600px;
+            margin: 4rem auto;
+            background: #fff;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+        }
+        .form-title {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .btn-cadastrar {
+            background-color: #2c3e50;
+            color: white;
+            font-weight: 600;
+        }
+        .btn-cadastrar:hover {
+            background-color: #1a252f;
+        }
+        .icon-header {
+            font-size: 2rem;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="form-container">
+    <div class="form-title">
+        <i class="fas fa-user-plus icon-header"></i>
+        <h4>Cadastro de Funcionário</h4>
+    </div>
+
+    <form action="/admin/cadastrar-funcionario" method="post">
+        <!-- Nome -->
+        <div class="mb-3">
+            <label for="nome" class="form-label">Nome Completo</label>
+            <input type="text" class="form-control" id="nome" name="nome" required>
+        </div>
+
+        <!-- CPF -->
+        <div class="mb-3">
+            <label for="cpf" class="form-label">CPF</label>
+            <input type="text" class="form-control" id="cpf" name="cpf" required>
+        </div>
+
+        <!-- Data de nascimento -->
+        <div class="mb-3">
+            <label for="dataNascimento" class="form-label">Data de Nascimento</label>
+            <input type="date" class="form-control" id="dataNascimento" name="dataNascimento" required>
+        </div>
+
+        <!-- Telefone -->
+        <div class="mb-3">
+            <label for="telefone" class="form-label">Telefone</label>
+            <input type="tel" class="form-control" id="telefone" name="telefone" required>
+        </div>
+
+        <!-- Endereço -->
+        <div class="mb-3">
+            <label for="endereco" class="form-label">Endereço</label>
+            <input type="text" class="form-control" id="endereco" name="endereco" required>
+        </div>
+
+        <!-- Cargo -->
+        <div class="mb-3">
+            <label for="cargo" class="form-label">Cargo</label>
+            <select class="form-select" id="cargo" name="cargo" required>
+                <option value="">Selecione...</option>
+                <option value="ESTAGIARIO">Estagiário</option>
+                <option value="ATENDENTE">Atendente</option>
+                <option value="GERENTE">Gerente</option>
+            </select>
+        </div>
+
+        <!-- Senha -->
+        <div class="mb-3">
+            <label for="senha" class="form-label">Senha</label>
+            <input type="password" class="form-control" id="senha" name="senha" required>
+        </div>
+
+        <!-- Botão -->
+        <button type="submit" class="btn btn-cadastrar w-100">
+            <i class="fas fa-check-circle me-2"></i>Cadastrar Funcionário
+        </button>
+    </form>
+</div>
+
+</body>
+</html>

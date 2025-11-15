@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Atualizar Dados - Banco Malvader</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            background-color: #f4f6f9;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 40px auto;
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #2c3e50;
+        }
+
+        .nav-tabs .nav-link.active {
+            background-color: #3498db;
+            color: white;
+            border: none;
+        }
+
+        .nav-tabs .nav-link {
+            color: #3498db;
+            font-weight: 600;
+        }
+
+        .tab-content {
+            margin-top: 20px;
+        }
+
+        label {
+            font-weight: bold;
+            margin-top: 15px;
+        }
+
+        .form-control {
+            margin-bottom: 10px;
+        }
+
+        button {
+            margin-top: 20px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Atualizar Dados</h2>
+
+    <!-- Submenu Tabs -->
+    <ul class="nav nav-tabs" id="atualizarTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="conta-tab" data-bs-toggle="tab" data-bs-target="#conta" type="button" role="tab">Conta</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="cliente-tab" data-bs-toggle="tab" data-bs-target="#cliente" type="button" role="tab">Cliente</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="funcionario-tab" data-bs-toggle="tab" data-bs-target="#funcionario" type="button" role="tab">Funcionário</button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="atualizarTabsContent">
+        <!-- Conta -->
+        <div class="tab-pane fade show active" id="conta" role="tabpanel">
+            <form>
+                <label>Limite (R$)</label>
+                <input type="number" class="form-control" name="limite" placeholder="Novo limite" required>
+
+                <label>Validação via score de crédito - Data de Vencimento</label>
+                <input type="date" class="form-control" name="vencimento" required>
+
+                <label>Taxa de Rendimento / Manutenção (%)</label>
+                <input type="number" step="0.01" class="form-control" name="taxa" placeholder="Ex: 1.5" required>
+
+                <button type="submit">Atualizar Conta</button>
+            </form>
+        </div>
+
+        <!-- Cliente -->
+        <div class="tab-pane fade" id="cliente" role="tabpanel">
+            <form>
+                <label>Telefone</label>
+                <input type="text" class="form-control" name="telefone" placeholder="Novo telefone" required>
+
+                <label>Endereço</label>
+                <input type="text" class="form-control" name="endereco" placeholder="Novo endereço" required>
+
+                <label>Nova Senha</label>
+                <input type="password" class="form-control" name="senha" placeholder="Nova senha" required>
+
+                <button type="submit">Atualizar Cliente</button>
+            </form>
+        </div>
+        <!-- Funcionário -->
+        <div class="tab-pane fade" id="funcionario" role="tabpanel">
+            <form>
+                <label>Cargo</label>
+                <input type="text" class="form-control" name="cargo" placeholder="Novo cargo" required>
+
+                <label>Telefone</label>
+                <input type="text" class="form-control" name="telefone" placeholder="Novo telefone" required>
+
+                <label>Endereço</label>
+                <input type="text" class="form-control" name="endereco" placeholder="Novo endereço" required>
+
+                <button type="submit">Atualizar Funcionário</button>
+            </form>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

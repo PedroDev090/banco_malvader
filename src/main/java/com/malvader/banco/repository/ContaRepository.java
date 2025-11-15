@@ -63,4 +63,14 @@ public interface ContaRepository extends JpaRepository<Conta, Integer> {
     // Buscar contas para relatório de movimentação
     @Query("SELECT c FROM Conta c WHERE c.dataAbertura BETWEEN :dataInicio AND :dataFim")
     List<Conta> findContasAbertasNoPeriodo(@Param("dataInicio") String dataInicio, @Param("dataFim") String dataFim);
+
+    // No ContaRepository - ADICIONE:
+
+    @Query("SELECT c FROM Conta c WHERE c.numeroConta = :numeroConta AND c.cliente.idCliente = :idCliente")
+    Optional<Conta> findByNumeroContaAndClienteIdCliente(@Param("numeroConta") String numeroConta,
+                                                         @Param("idCliente") Integer idCliente);
+
+    @Query("SELECT COUNT(c) > 0 FROM Conta c WHERE c.numeroConta = :numeroConta AND c.cliente.idCliente = :idCliente")
+    boolean existsByNumeroContaAndClienteIdCliente(@Param("numeroConta") String numeroConta,
+                                                   @Param("idCliente") Integer idCliente);
 }

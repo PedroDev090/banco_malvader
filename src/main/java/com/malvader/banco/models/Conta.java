@@ -14,7 +14,7 @@ public class Conta {
     @Column(name = "id_conta", columnDefinition = "INT")
     private Integer idConta;
 
-    @Column(name = "numero_conta", nullable = false, unique = true, length = 20)
+    @Column(name = "numero_conta", nullable = false, unique = true, length = 30)
     private String numeroConta;
 
     @ManyToOne(fetch = FetchType.LAZY)

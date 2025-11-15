@@ -6,6 +6,7 @@ import com.malvader.banco.models.*;
 import com.malvader.banco.service.OperacaoService;
 import com.malvader.banco.service.ContaService;
 import com.malvader.banco.service.TransacaoService;
+import com.malvader.banco.service.ClienteService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -29,6 +30,29 @@ public class ClienteController {
 
     @Autowired
     private TransacaoService transacaoService;
+
+    @Autowired
+    private ClienteService clienteService;
+
+    /**
+     * Método auxiliar para obter o cliente logado
+     */
+    private Optional<Cliente> obterClienteLogado(HttpSession session) {
+        if (session.getAttribute("usuarioLogado") == null) {
+            return Optional.empty();
+        }
+        Integer idUsuarioLogado = (Integer) session.getAttribute("idUsuario");
+        return clienteService.buscarPorIdComUsuario(idUsuarioLogado);
+    }
+
+    /**
+     * Verificar se conta pertence ao cliente logado
+     */
+    private boolean contaPertenceAoClienteLogado(String numeroConta, HttpSession session) {
+        Optional<Cliente> clienteOpt = obterClienteLogado(session);
+        return clienteOpt.isPresent() &&
+                contaService.contaPertenceAoCliente(numeroConta, clienteOpt.get().getIdCliente());
+    }
 
     @GetMapping("/dashboard")
     public String dashboardCliente(HttpSession session, Model model) {
@@ -66,7 +90,13 @@ public class ClienteController {
         }
 
         try {
-            // Buscar conta pelo número
+            // VERIFICAR SE CONTA PERTENCE AO CLIENTE LOGADO
+            if (!contaPertenceAoClienteLogado(numeroConta, session)) {
+                redirectAttributes.addFlashAttribute("erro", "Conta não pertence ao cliente ou acesso não autorizado");
+                return "redirect:/cliente/deposito";
+            }
+
+            // Buscar conta pelo número (já validado que pertence ao cliente)
             Optional<Conta> contaOpt = contaService.buscarPorNumero(numeroConta);
             if (contaOpt.isEmpty()) {
                 redirectAttributes.addFlashAttribute("erro", "Conta não encontrada: " + numeroConta);
@@ -118,7 +148,13 @@ public class ClienteController {
         }
 
         try {
-            // Buscar conta pelo número
+            // VERIFICAR SE CONTA PERTENCE AO CLIENTE LOGADO
+            if (!contaPertenceAoClienteLogado(numeroConta, session)) {
+                redirectAttributes.addFlashAttribute("erro", "Conta não pertence ao cliente ou acesso não autorizado");
+                return "redirect:/cliente/saque";
+            }
+
+            // Buscar conta pelo número (já validado que pertence ao cliente)
             Optional<Conta> contaOpt = contaService.buscarPorNumero(numeroConta);
             if (contaOpt.isEmpty()) {
                 redirectAttributes.addFlashAttribute("erro", "Conta não encontrada: " + numeroConta);
@@ -171,6 +207,12 @@ public class ClienteController {
         }
 
         try {
+            // VERIFICAR SE CONTA ORIGEM PERTENCE AO CLIENTE LOGADO
+            if (!contaPertenceAoClienteLogado(contaOrigem, session)) {
+                redirectAttributes.addFlashAttribute("erro", "Conta origem não pertence ao cliente ou acesso não autorizado");
+                return "redirect:/cliente/transferencia";
+            }
+
             // Buscar contas pelos números
             Optional<Conta> contaOrigemOpt = contaService.buscarPorNumero(contaOrigem);
             Optional<Conta> contaDestinoOpt = contaService.buscarPorNumero(contaDestino);
@@ -236,10 +278,19 @@ public class ClienteController {
         }
 
         try {
-            // Buscar conta pelo número
-            Optional<Conta> contaOpt = contaService.buscarPorNumero(numeroConta);
+            // BUSCAR CLIENTE ASSOCIADO AO USUÁRIO
+            Optional<Cliente> clienteOpt = obterClienteLogado(session);
+            if (clienteOpt.isEmpty()) {
+                model.addAttribute("erro", "Cliente não encontrado");
+                return "clientes/saldo";
+            }
+
+            Cliente cliente = clienteOpt.get();
+
+            // VERIFICAR SE A CONTA PERTENCE AO CLIENTE
+            Optional<Conta> contaOpt = contaService.buscarContaDoCliente(numeroConta, cliente.getIdCliente());
             if (contaOpt.isEmpty()) {
-                model.addAttribute("erro", "Conta não encontrada: " + numeroConta);
+                model.addAttribute("erro", "Conta não encontrada ou acesso não autorizado");
                 return "clientes/saldo";
             }
 
@@ -289,10 +340,19 @@ public class ClienteController {
         }
 
         try {
-            // Buscar conta pelo número
-            Optional<Conta> contaOpt = contaService.buscarPorNumero(numeroConta);
+            // BUSCAR CLIENTE ASSOCIADO AO USUÁRIO
+            Optional<Cliente> clienteOpt = obterClienteLogado(session);
+            if (clienteOpt.isEmpty()) {
+                model.addAttribute("erro", "Cliente não encontrado");
+                return "clientes/extrato";
+            }
+
+            Cliente cliente = clienteOpt.get();
+
+            // VERIFICAR SE A CONTA PERTENCE AO CLIENTE
+            Optional<Conta> contaOpt = contaService.buscarContaDoCliente(numeroConta, cliente.getIdCliente());
             if (contaOpt.isEmpty()) {
-                model.addAttribute("erro", "Conta não encontrada: " + numeroConta);
+                model.addAttribute("erro", "Conta não encontrada ou acesso não autorizado");
                 return "clientes/extrato";
             }
 
@@ -316,5 +376,36 @@ public class ClienteController {
         }
 
         return "clientes/extrato";
+    }
+
+    // ========== LISTAR CONTAS DO CLIENTE ==========
+    @GetMapping("/minhas-contas")
+    public String listarContasCliente(HttpSession session, Model model) {
+        if (session.getAttribute("usuarioLogado") == null) {
+            return "redirect:/auth/login";
+        }
+
+        try {
+            // BUSCAR CLIENTE ASSOCIADO AO USUÁRIO
+            Optional<Cliente> clienteOpt = obterClienteLogado(session);
+            if (clienteOpt.isEmpty()) {
+                model.addAttribute("erro", "Cliente não encontrado");
+                return "clientes/minhasContas";
+            }
+
+            Cliente cliente = clienteOpt.get();
+
+            // Buscar todas as contas do cliente
+            List<Conta> contas = contaService.buscarContasPorCliente(cliente.getIdCliente());
+
+            model.addAttribute("contas", contas);
+            model.addAttribute("cliente", cliente);
+            model.addAttribute("sucesso", "Contas carregadas com sucesso");
+
+        } catch (Exception e) {
+            model.addAttribute("erro", "Erro ao carregar contas: " + e.getMessage());
+        }
+
+        return "clientes/minhasContas";
     }
 }

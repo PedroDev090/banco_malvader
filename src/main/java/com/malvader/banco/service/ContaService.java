@@ -208,4 +208,39 @@ public class ContaService {
     public Long contarPorTipoEStatus(TipoConta tipo, StatusConta status) {
         return contaRepository.countByTipoAndStatus(tipo, status);
     }
+
+    // No ContaService - ADICIONE ESTES MÉTODOS:
+
+    /**
+     * Buscar conta verificando se pertence ao cliente
+     */
+    @Transactional(readOnly = true)
+    public Optional<Conta> buscarContaDoCliente(String numeroConta, Integer idCliente) {
+        return contaRepository.findByNumeroContaAndClienteIdCliente(numeroConta, idCliente);
+    }
+
+    /**
+     * Verificar se conta pertence ao cliente
+     */
+    @Transactional(readOnly = true)
+    public boolean contaPertenceAoCliente(String numeroConta, Integer idCliente) {
+        return contaRepository.existsByNumeroContaAndClienteIdCliente(numeroConta, idCliente);
+    }
+
+    /**
+     * Buscar todas as contas de um cliente
+     */
+    @Transactional(readOnly = true)
+    public List<Conta> buscarContasPorCliente(Integer idCliente) {
+        return contaRepository.findByClienteIdCliente(idCliente);
+    }
+
+
+    /**
+     * Salvar conta (para atualizações)
+     */
+    public Conta salvarConta(Conta conta) {
+        return contaRepository.save(conta);
+    }
+
 }

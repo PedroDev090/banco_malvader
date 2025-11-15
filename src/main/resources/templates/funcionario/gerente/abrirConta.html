@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Abertura de Conta - Banco Malvader</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f9;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 40px auto;
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h2 {
+            text-align: center;
+            color: #2c3e50;
+        }
+        label {
+            display: block;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .extra-fields {
+            display: none;
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #ecf0f1;
+            border-radius: 6px;
+        }
+        button {
+            margin-top: 25px;
+            padding: 10px 20px;
+            background-color: #2980b9;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #3498db;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Abertura de Conta</h2>
+    <form id="formConta">
+        <label for="tipoConta">Tipo de Conta</label>
+        <select id="tipoConta" name="tipoConta" onchange="mostrarCampos()">
+            <option value="">Selecione</option>
+            <option value="CP">Conta Poupança</option>
+            <option value="CC">Conta Corrente</option>
+            <option value="CI">Conta Investimento</option>
+        </select>
+
+        <!-- Campos base -->
+        <label>Agência</label><input type="text" name="agencia" required>
+        <label>Número da Conta</label><input type="text" name="numeroConta" required>
+        <label>Nome</label><input type="text" name="nome" required>
+        <label>CPF</label><input type="text" name="cpf" required>
+        <label>Data de Nascimento</label><input type="date" name="dataNascimento" required>
+        <label>Telefone</label><input type="text" name="telefone" required>
+        <label>Endereço Completo</label><input type="text" name="endereco" required>
+        <label>Senha</label><input type="password" name="senha" required>
+
+        <!-- Campos CP -->
+        <div id="camposCP" class="extra-fields">
+            <label>Taxa de Rendimento (%)</label>
+            <input type="number" step="0.01" name="taxaRendimento">
+        </div>
+
+        <!-- Campos CC -->
+        <div id="camposCC" class="extra-fields">
+            <label>Limite Dinâmico (R$)</label>
+            <input type="number" step="0.01" name="limiteDinamico">
+            <label>Data de Vencimento</label>
+            <input type="date" name="dataVencimento">
+            <label>Taxa de Manutenção (R$)</label>
+            <input type="number" step="0.01" name="taxaManutencao">
+        </div>
+
+        <!-- Campos CI -->
+        <div id="camposCI" class="extra-fields">
+            <label>Perfil de Risco</label>
+            <select name="perfilRisco">
+                <option value="baixo">Baixo</option>
+                <option value="medio">Médio</option>
+                <option value="alto">Alto</option>
+            </select>
+            <label>Valor Mínimo de Investimento (R$)</label>
+            <input type="number" step="0.01" name="valorMinimo">
+        </div>
+
+        <button type="submit">Abrir Conta</button>
+    </form>
+</div>
+
+<script>
+    function mostrarCampos() {
+        const tipo = document.getElementById("tipoConta").value;
+        document.getElementById("camposCP").style.display = tipo === "CP" ? "block" : "none";
+        document.getElementById("camposCC").style.display = tipo === "CC" ? "block" : "none";
+        document.getElementById("camposCI").style.display = tipo === "CI" ? "block" : "none";
+    }
+</script>
+</body>
+</html>
