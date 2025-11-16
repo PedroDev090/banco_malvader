@@ -75,29 +75,36 @@
     </div>
 
     <!-- Lista de Transações -->
-    <div th:if="${transacoes != null and !transacoes.empty}">
+    <div th:if="${transacoes != null and !#lists.isEmpty(transacoes)}">
         <h5 class="mb-3">Últimas Transações</h5>
         <div class="transacoes-list">
             <div th:each="transacao : ${transacoes}"
-                 th:classappend="'transacao-item ' +
-                                (${transacao.tipoTransacao.name()} == 'DEPOSITO' ? 'transacao-deposito' :
-                                 ${transacao.tipoTransacao.name()} == 'SAQUE' ? 'transacao-saque' :
-                                 'transacao-transferencia')">
+                 th:classappend="${'transacao-item ' +
+                                  (transacao.tipoTransacao.name() == 'DEPOSITO' ? 'transacao-deposito' :
+                                      (transacao.tipoTransacao.name() == 'SAQUE' ? 'transacao-saque' :
+                                       'transacao-transferencia'))}">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
                         <strong th:text="${transacao.tipoTransacao.name()}"></strong>
                         <div class="text-muted small" th:text="${transacao.descricao}"></div>
-                        <div class="text-muted small" th:text="${#temporals.format(transacao.dataHora, 'dd/MM/yyyy HH:mm')}"></div>
+                        <div class="text-muted small"
+                             th:text="${#temporals.format(transacao.dataHora, 'dd/MM/yyyy HH:mm')}"></div>
                     </div>
-                    <div th:classappend="(${transacao.tipoTransacao.name()} == 'DEPOSITO' or ${transacao.tipoTransacao.name()} == 'RENDIMENTO') ? 'valor-positivo' : 'valor-negativo'"
-                         th:text="((${transacao.tipoTransacao.name()} == 'DEPOSITO' or ${transacao.tipoTransacao.name()} == 'RENDIMENTO') ? '+ ' : '- ') + 'R$ ' + ${#numbers.formatDecimal(transacao.valor, 1, 2, 'POINT')}">
+
+                    <div th:classappend="${(transacao.tipoTransacao.name() == 'DEPOSITO' or
+                                            transacao.tipoTransacao.name() == 'RENDIMENTO')
+                                            ? ' valor-positivo' : ' valor-negativo'}"
+                         th:text="${((transacao.tipoTransacao.name() == 'DEPOSITO' or
+                                      transacao.tipoTransacao.name() == 'RENDIMENTO')
+                                      ? '+ ' : '- ')
+                                      + 'R$ ' + #numbers.formatDecimal(transacao.valor, 1, 2, 'POINT')}">
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div th:if="${transacoes != null and transacoes.empty}" class="alert alert-info">
+    <div th:if="${transacoes != null and #lists.isEmpty(transacoes)}" class="alert alert-info">
         <i class="fas fa-info-circle me-2"></i>
         Nenhuma transação encontrada para esta conta no período.
     </div>

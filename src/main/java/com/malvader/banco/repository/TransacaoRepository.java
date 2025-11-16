@@ -72,4 +72,19 @@ public interface TransacaoRepository extends JpaRepository<Transacao, Integer> {
     Long countByTipoAndPeriodo(@Param("tipo") TipoTransacao tipo,
                                @Param("inicio") LocalDateTime inicio,
                                @Param("fim") LocalDateTime fim);
+
+    // ===== Filtro geral para relatórios (data, tipo, agência) =====
+    @Query("SELECT t " +
+            "FROM Transacao t " +
+            "JOIN t.contaOrigem co " +
+            "JOIN co.agencia ag " +
+            "WHERE (:inicio IS NULL OR t.dataHora >= :inicio) " +
+            "  AND (:fim IS NULL OR t.dataHora <= :fim) " +
+            "  AND (:tipo IS NULL OR t.tipoTransacao = :tipo) " +
+            "  AND (:idAgencia IS NULL OR ag.idAgencia = :idAgencia) " +
+            "ORDER BY t.dataHora DESC")
+    List<Transacao> buscarPorFiltros(@Param("inicio") LocalDateTime inicio,
+                                     @Param("fim") LocalDateTime fim,
+                                     @Param("tipo") TipoTransacao tipo,
+                                     @Param("idAgencia") Integer idAgencia);
 }

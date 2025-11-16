@@ -154,6 +154,72 @@ public class FuncionarioService {
                 return false;
         }
     }
+    /**
+     * Buscar funcionário por código e, opcionalmente, por cargo (pode ser null).
+     * Usado na tela de "Consultar Dados" na aba Funcionário.
+     */
+    @Transactional(readOnly = true)
+    public Optional<Funcionario> buscarPorCodigoECargo(String codigoFuncionario, String cargoStr) {
+
+        if (cargoStr == null || cargoStr.isBlank()) {
+            // Busca somente pelo código
+            return funcionarioRepository.findByCodigoFuncionario(codigoFuncionario);
+        }
+
+        Cargo cargo;
+        try {
+            // converte string para enum (ATENDENTE, ESTAGIARIO, GERENTE)
+            cargo = Cargo.valueOf(cargoStr.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            // cargo inválido → considera que não encontrou
+            return Optional.empty();
+        }
+
+        return funcionarioRepository.findByCodigoFuncionarioAndCargo(codigoFuncionario, cargo);
+    }
+
+    /**
+     * Quantidade de contas associadas ao funcionário.
+     * Aqui reaproveitamos o obterEstatisticas(...) que você já tem.
+     */
+    @Transactional(readOnly = true)
+    public Integer contarContasAbertas(Funcionario funcionario) {
+        EstatisticasFuncionarioDTO dto = obterEstatisticas(funcionario.getIdFuncionario());
+        return dto.getContasAbertas();
+    }
+
+    /**
+     * Desempenho do funcionário em forma de texto (média movimentada).
+     */
+    @Transactional(readOnly = true)
+    public String calcularDesempenho(Funcionario funcionario) {
+        EstatisticasFuncionarioDTO dto = obterEstatisticas(funcionario.getIdFuncionario());
+        BigDecimal media = dto.getMediaMovimentacao();
+        if (media == null) {
+            return "R$ 0,00";
+        }
+        // se quiser, depois formata bonitinho com NumberFormat
+        return "R$ " + media;
+    }
+
+    /**
+     * Endereço principal do funcionário.
+     * Pega o primeiro endereço da lista de endereços do usuário (se existir).
+     */
+    @Transactional(readOnly = true)
+    public String buscarEnderecoPrincipal(Funcionario funcionario) {
+        if (funcionario.getUsuario() == null ||
+                funcionario.getUsuario().getEnderecos() == null ||
+                funcionario.getUsuario().getEnderecos().isEmpty()) {
+            return "";
+        }
+
+        // usa o primeiro endereço como "principal"
+        var end = funcionario.getUsuario().getEnderecos().get(0);
+
+        // como não vimos a classe EnderecoUsuario, por segurança usamos toString()
+        return end.toString();  // depois você pode montar "Rua X, 123 - Cidade/UF"
+    }
 
     /**
      * Obter estatísticas do funcionário

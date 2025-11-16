@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <title>Atualizar Dados - Banco Malvader</title>
@@ -76,17 +76,28 @@
     <!-- Submenu Tabs -->
     <ul class="nav nav-tabs" id="atualizarTabs" role="tablist">
         <li class="nav-item" role="presentation">
-            <button class="nav-link active" id="conta-tab" data-bs-toggle="tab" data-bs-target="#conta" type="button" role="tab">Conta</button>
+            <button class="nav-link active" id="conta-tab" data-bs-toggle="tab" data-bs-target="#conta" type="button" role="tab">
+                Conta
+            </button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link" id="cliente-tab" data-bs-toggle="tab" data-bs-target="#cliente" type="button" role="tab">Cliente</button>
+            <button class="nav-link" id="cliente-tab" data-bs-toggle="tab" data-bs-target="#cliente" type="button" role="tab">
+                Cliente
+            </button>
         </li>
     </ul>
 
     <div class="tab-content" id="atualizarTabsContent">
-        <!-- Conta -->
+        <!-- CONTA -->
         <div class="tab-pane fade show active" id="conta" role="tabpanel">
-            <form>
+            <!-- mensagens -->
+            <div th:if="${mensagemErroAtualizar}" class="alert alert-danger" th:text="${mensagemErroAtualizar}"></div>
+            <div th:if="${mensagemSucessoAtualizar}" class="alert alert-success" th:text="${mensagemSucessoAtualizar}"></div>
+
+            <form th:action="@{/atendente/atualizar-dados}" method="post">
+                <label>Número da Conta</label>
+                <input type="text" class="form-control" name="numeroConta" placeholder="Informe o número da conta" required>
+
                 <label>Limite (R$)</label>
                 <input type="number" class="form-control" name="limite" placeholder="Novo limite" required>
 
@@ -100,9 +111,16 @@
             </form>
         </div>
 
-        <!-- Cliente -->
+        <!-- CLIENTE -->
         <div class="tab-pane fade" id="cliente" role="tabpanel">
-            <form>
+            <!-- mensagens -->
+            <div th:if="${mensagemErroAtualizarCliente}" class="alert alert-danger" th:text="${mensagemErroAtualizarCliente}"></div>
+            <div th:if="${mensagemSucessoAtualizarCliente}" class="alert alert-success" th:text="${mensagemSucessoAtualizarCliente}"></div>
+
+            <form th:action="@{/atendente/atualizar-cliente}" method="post">
+                <label>CPF do Cliente</label>
+                <input type="text" class="form-control" name="cpfCliente" placeholder="CPF do cliente" required>
+
                 <label>Telefone</label>
                 <input type="text" class="form-control" name="telefone" placeholder="Novo telefone" required>
 
@@ -110,7 +128,7 @@
                 <input type="text" class="form-control" name="endereco" placeholder="Novo endereço" required>
 
                 <label>Nova Senha</label>
-                <input type="password" class="form-control" name="senha" placeholder="Nova senha" required>
+                <input type="password" class="form-control" name="senha" placeholder="Nova senha">
 
                 <button type="submit">Atualizar Cliente</button>
             </form>
