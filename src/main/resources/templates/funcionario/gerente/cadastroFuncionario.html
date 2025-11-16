@@ -45,8 +45,8 @@
         <h4>Cadastro de Funcionário</h4>
     </div>
 
-    <form action="/admin/cadastrar-funcionario" method="post">
-        <!-- Nome -->
+    <form th:action="@{/gerente/cadastrar-funcionario}" method="post">
+    <!-- Nome -->
         <div class="mb-3">
             <label for="nome" class="form-label">Nome Completo</label>
             <input type="text" class="form-control" id="nome" name="nome" required>

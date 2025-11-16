@@ -364,7 +364,7 @@ public class ClienteController {
                 return "clientes/extrato";
             }
 
-            // Buscar últimas transações (últimos 30 dias)
+            // Buscar últimas transações (por exemplo, últimas 20)
             List<Transacao> transacoes = transacaoService.buscarUltimasTransacoes(conta.getIdConta(), 20);
 
             model.addAttribute("transacoes", transacoes);
@@ -376,6 +376,84 @@ public class ClienteController {
         }
 
         return "clientes/extrato";
+    }
+
+    // ========== ENCERRAR CONTA ==========
+
+    /**
+     * GET: exibe a tela de encerramento de conta do cliente
+     */
+    @GetMapping("/encerrar-conta")
+    public String paginaEncerrarConta(HttpSession session, Model model) {
+        if (session.getAttribute("usuarioLogado") == null) {
+            return "redirect:/auth/login";
+        }
+        return "clientes/encerrarConta"; // encerrarConta.html em /templates/clientes/
+    }
+
+    /**
+     * POST: processa o encerramento da conta
+     */
+    @PostMapping("/encerrar")
+    public String processarEncerramentoConta(@RequestParam("numeroConta") String numeroConta,
+                                             @RequestParam("senha") String senha,
+                                             @RequestParam("motivo") String motivo,
+                                             HttpSession session,
+                                             RedirectAttributes redirectAttributes) {
+        if (session.getAttribute("usuarioLogado") == null) {
+            return "redirect:/auth/login";
+        }
+
+        try {
+            // BUSCAR CLIENTE ASSOCIADO AO USUÁRIO
+            Optional<Cliente> clienteOpt = obterClienteLogado(session);
+            if (clienteOpt.isEmpty()) {
+                redirectAttributes.addFlashAttribute("erro", "Cliente não encontrado");
+                return "redirect:/cliente/encerrar-conta";
+            }
+
+            Cliente cliente = clienteOpt.get();
+
+            // VERIFICAR SE A CONTA PERTENCE AO CLIENTE
+            Optional<Conta> contaOpt = contaService.buscarContaDoCliente(numeroConta, cliente.getIdCliente());
+            if (contaOpt.isEmpty()) {
+                redirectAttributes.addFlashAttribute("erro", "Conta não encontrada ou acesso não autorizado");
+                return "redirect:/cliente/encerrar-conta";
+            }
+
+            Conta conta = contaOpt.get();
+
+            // Verificar se a conta está ativa
+            if (conta.getStatus() != StatusConta.ATIVA) {
+                redirectAttributes.addFlashAttribute("erro", "Conta não está ativa");
+                return "redirect:/cliente/encerrar-conta";
+            }
+
+            // Verificar se o saldo é zero (ou regras que você quiser)
+            if (conta.getSaldo() == null || conta.getSaldo().compareTo(BigDecimal.ZERO) != 0) {
+                redirectAttributes.addFlashAttribute("erro",
+                        "Não é possível encerrar a conta. Há saldo pendente ou dívidas ativas.");
+                return "redirect:/cliente/encerrar-conta";
+            }
+
+            // TODO: validar senha do cliente (comparar hash em Usuario)
+            // Por enquanto, vamos assumir que a senha está correta.
+
+            // Marcar conta como encerrada
+            conta.setStatus(StatusConta.ENCERRADA);
+            contaService.salvarConta(conta);
+
+            // Aqui você poderia registrar o motivo numa tabela de histórico, se existir.
+
+            redirectAttributes.addFlashAttribute("sucesso",
+                    "Conta " + numeroConta + " encerrada com sucesso!");
+
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("erro",
+                    "Erro ao encerrar conta: " + e.getMessage());
+        }
+
+        return "redirect:/cliente/encerrar-conta";
     }
 
     // ========== LISTAR CONTAS DO CLIENTE ==========

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR"
+      xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <title>Consultar Dados - Banco Malvader</title>
@@ -73,125 +74,247 @@
     <!-- Submenu Tabs -->
     <ul class="nav nav-tabs" id="consultaTabs" role="tablist">
         <li class="nav-item" role="presentation">
-            <button class="nav-link active" id="conta-tab" data-bs-toggle="tab" data-bs-target="#conta" type="button" role="tab">Conta</button>
+            <button class="nav-link"
+                    id="conta-tab"
+                    data-bs-toggle="tab"
+                    data-bs-target="#conta"
+                    type="button"
+                    role="tab"
+                    th:classappend="${aba == 'conta' or aba == null} ? ' active' : ''">
+                Conta
+            </button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link" id="funcionario-tab" data-bs-toggle="tab" data-bs-target="#funcionario" type="button" role="tab">Funcionário</button>
+            <button class="nav-link"
+                    id="funcionario-tab"
+                    data-bs-toggle="tab"
+                    data-bs-target="#funcionario"
+                    type="button"
+                    role="tab"
+                    th:classappend="${aba == 'funcionario'} ? ' active' : ''">
+                Funcionário
+            </button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link" id="cliente-tab" data-bs-toggle="tab" data-bs-target="#cliente" type="button" role="tab">Cliente</button>
+            <button class="nav-link"
+                    id="cliente-tab"
+                    data-bs-toggle="tab"
+                    data-bs-target="#cliente"
+                    type="button"
+                    role="tab"
+                    th:classappend="${aba == 'cliente'} ? ' active' : ''">
+                Cliente
+            </button>
         </li>
     </ul>
 
     <div class="tab-content" id="consultaTabsContent">
-        <!-- Conta -->
-        <div class="tab-pane fade show active" id="conta" role="tabpanel">
-            <label>Tipo de Conta</label>
-            <select class="form-control" name="tipoConta" required>
-                <option value="">Selecione o tipo</option>
-                <option value="CC">Conta Corrente (CC)</option>
-                <option value="CP">Conta Poupança (CP)</option>
-                <option value="CI">Conta Investimento (CI)</option>
-            </select>
+        <!-- CONTA -->
+        <div class="tab-pane fade"
+             id="conta"
+             role="tabpanel"
+             th:classappend="${aba == 'conta' or aba == null} ? ' show active' : ''">
 
-            <label>Nome</label>
-            <input type="text" class="form-control" readonly value="Maria Oliveira">
+            <!-- Form de busca pelo número da conta -->
+            <form th:action="@{/atendente/consultar-saldo}" method="get" class="row g-2 mb-3">
+                <input type="hidden" name="aba" value="conta"/>
+                <div class="col-md-4">
+                    <label>Número da Conta</label>
+                    <input type="text"
+                           class="form-control"
+                           name="numeroConta"
+                           th:value="${param.numeroConta}">
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button class="btn btn-primary w-100" type="submit">Buscar</button>
+                </div>
+            </form>
 
-            <label>CPF</label>
-            <input type="text" class="form-control" readonly value="987.654.321-00">
+            <!-- Mensagem de erro (quando não encontra conta) -->
+            <div th:if="${mensagemErro}" class="alert alert-danger">
+                <span th:text="${mensagemErro}"></span>
+            </div>
 
-            <label>Saldo Atual</label>
-            <input type="text" class="form-control" readonly value="R$ 5.200,00">
+            <!-- Só mostra os dados se a conta foi encontrada -->
+            <div th:if="${conta != null}">
+                <label>Tipo de Conta</label>
+                <input type="text" class="form-control" readonly
+                       th:value="${conta.tipoConta}">
 
-            <label>Limite Disponível</label>
-            <input type="text" class="form-control" readonly value="R$ 2.000,00">
+                <label>Nome</label>
+                <input type="text" class="form-control" readonly
+                       th:value="${conta.cliente.usuario.nome}">
 
-            <label>Data de Vencimento</label>
-            <input type="date" class="form-control" readonly value="2025-12-31">
+                <label>CPF</label>
+                <input type="text" class="form-control" readonly
+                       th:value="${conta.cliente.usuario.cpf}">
 
-            <div class="section-title">Histórico de Transações</div>
-            <table class="table table-bordered">
-                <thead>
-                <tr>
-                    <th>Data</th>
-                    <th>Tipo</th>
-                    <th>Valor</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr><td>13/11/2025</td><td>Depósito</td><td>R$ 1.200,00</td></tr>
-                <tr><td>12/11/2025</td><td>Saque</td><td>R$ 300,00</td></tr>
-                </tbody>
-            </table>
+                <label>Saldo Atual</label>
+                <input type="text" class="form-control" readonly
+                       th:value="${conta.saldo}">
+
+                <label>Limite Disponível</label>
+                <input type="text" class="form-control" readonly
+                       th:value="${contaCorrente != null ? contaCorrente.limite : ''}">
+
+                <label>Data de Vencimento</label>
+                <input type="date" class="form-control" readonly
+                       th:value="${contaCorrente != null ? contaCorrente.dataVencimento : null}">
+
+                <div class="section-title">Histórico de Transações</div>
+                <table class="table table-bordered">
+                    <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Tipo</th>
+                        <th>Valor</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <!-- futuro: iterar sobre transações -->
+                    </tbody>
+                </table>
+            </div>
         </div>
 
-        <!-- Funcionário -->
-        <div class="tab-pane fade" id="funcionario" role="tabpanel">
-            <label>Código</label>
-            <input type="text" class="form-control" readonly value="FUNC002">
+        <!-- FUNCIONÁRIO -->
+        <div class="tab-pane fade"
+             id="funcionario"
+             role="tabpanel"
+             th:classappend="${aba == 'funcionario'} ? ' show active' : ''">
 
-            <label>Cargo</label>
-            <input type="text" class="form-control" readonly value="Estagiário">
+            <!-- Form de busca do funcionário -->
+            <form th:action="@{/atendente/consultar-saldo}" method="get" class="row g-2 mb-3">
+                <input type="hidden" name="aba" value="funcionario"/>
+                <div class="col-md-3">
+                    <label>Código do Funcionário</label>
+                    <input type="text"
+                           class="form-control"
+                           name="codigoFuncionario"
+                           th:value="${param.codigoFuncionario}">
+                </div>
+                <div class="col-md-3">
+                    <label>Cargo</label>
+                    <input type="text"
+                           class="form-control"
+                           name="cargo"
+                           th:value="${param.cargo}">
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button class="btn btn-primary w-100" type="submit">Buscar</button>
+                </div>
+            </form>
 
-            <label>Nome</label>
-            <input type="text" class="form-control" readonly value="João Silva">
+            <!-- Mensagem de erro para funcionário -->
+            <div th:if="${mensagemErroFuncionario}" class="alert alert-danger">
+                <span th:text="${mensagemErroFuncionario}"></span>
+            </div>
 
-            <label>CPF</label>
-            <input type="text" class="form-control" readonly value="123.456.789-00">
+            <!-- Dados do funcionário, se encontrado -->
+            <div th:if="${funcionario != null}">
+                <label>Código</label>
+                <input type="text" class="form-control" readonly
+                       th:value="${funcionario.codigoFuncionario}">
 
-            <label>Data de Nascimento</label>
-            <input type="date" class="form-control" readonly value="1995-04-10">
+                <label>Cargo</label>
+                <input type="text" class="form-control" readonly
+                       th:value="${funcionario.cargo}">
 
-            <label>Telefone</label>
-            <input type="text" class="form-control" readonly value="(61) 99876-5432">
+                <label>Nome</label>
+                <input type="text" class="form-control" readonly
+                       th:value="${funcionario.usuario.nome}">
 
-            <label>Endereço</label>
-            <input type="text" class="form-control" readonly value="Rua das Flores, 123 - Brasília/DF">
+                <label>CPF</label>
+                <input type="text" class="form-control" readonly
+                       th:value="${funcionario.usuario.cpf}">
 
-            <label>Nº de Contas Abertas</label>
-            <input type="text" class="form-control" readonly value="12">
+                <label>Data de Nascimento</label>
+                <input type="text" class="form-control" readonly
+                       th:value="${#temporals.format(funcionario.usuario.dataNascimento, 'dd/MM/yyyy')}">
 
-            <label>Desempenho (Média Movimentada)</label>
-            <input type="text" class="form-control" readonly value="R$ 8.500,00">
+                <label>Telefone</label>
+                <input type="text" class="form-control" readonly
+                       th:value="${funcionario.usuario.telefone}">
+
+                <label>Nº de Contas Abertas</label>
+                <input type="text" class="form-control" readonly
+                       th:value="${numContasAbertasFuncionario}">
+
+                <label>Desempenho (Média Movimentada)</label>
+                <input type="text" class="form-control" readonly
+                       th:value="${desempenhoMedioFuncionario}">
+            </div>
         </div>
 
-        <!-- Cliente -->
-        <div class="tab-pane fade" id="cliente" role="tabpanel">
-            <label>Nome</label>
-            <input type="text" class="form-control" readonly value="Ana Costa">
+        <!-- CLIENTE -->
+        <div class="tab-pane fade"
+             id="cliente"
+             role="tabpanel"
+             th:classappend="${aba == 'cliente'} ? ' show active' : ''">
 
-            <label>CPF</label>
-            <input type="text" class="form-control" readonly value="321.654.987-00">
+            <!-- Form de busca do cliente pelo CPF -->
+            <form th:action="@{/atendente/consultar-saldo}" method="get" class="row g-2 mb-3">
+                <input type="hidden" name="aba" value="cliente"/>
+                <div class="col-md-4">
+                    <label>CPF do Cliente</label>
+                    <input type="text"
+                           class="form-control"
+                           name="cpfCliente"
+                           th:value="${param.cpfCliente}">
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button class="btn btn-primary w-100" type="submit">Buscar</button>
+                </div>
+            </form>
 
-            <label>Data de Nascimento</label>
-            <input type="date" class="form-control" readonly value="1988-09-22">
+            <!-- Mensagem de erro para cliente -->
+            <div th:if="${mensagemErroCliente}" class="alert alert-danger">
+                <span th:text="${mensagemErroCliente}"></span>
+            </div>
 
-            <label>Telefone</label>
-            <input type="text" class="form-control" readonly value="(61) 99999-1234">
+            <!-- Dados do cliente, se encontrado -->
+            <div th:if="${cliente != null}">
+                <label>Nome</label>
+                <input type="text" class="form-control" readonly
+                       th:value="${cliente.usuario.nome}">
 
-            <label>Endereço</label>
-            <input type="text" class="form-control" readonly value="Av. Central, 456 - Brasília/DF">
+                <label>CPF</label>
+                <input type="text" class="form-control" readonly
+                       th:value="${cliente.usuario.cpf}">
 
-            <label>Score de Crédito</label>
-            <input type="text" class="form-control" readonly value="820 (calculado via procedure)">
+                <label>Data de Nascimento</label>
+                <input type="text" class="form-control" readonly
+                       th:value="${#temporals.format(cliente.usuario.dataNascimento, 'dd/MM/yyyy')}">
 
-            <div class="section-title">Contas Ativas/Inativas</div>
-            <table class="table table-bordered">
-                <thead>
-                <tr>
-                    <th>Tipo</th>
-                    <th>Número</th>
-                    <th>Status</th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr><td>Conta Corrente</td><td>12345678-9</td><td>Ativa</td></tr>
-                <tr><td>Conta Investimento</td><td>98765432-1</td><td>Inativa</td></tr>
-                </tbody>
-            </table>
+                <label>Telefone</label>
+                <input type="text" class="form-control" readonly
+                       th:value="${cliente.usuario.telefone}">
+
+                <label>Score de Crédito</label>
+                <input type="text" class="form-control" readonly
+                       th:value="${cliente.scoreCredito}">
+
+                <div class="section-title">Contas Ativas/Inativas</div>
+                <table class="table table-bordered">
+                    <thead>
+                    <tr>
+                        <th>Tipo</th>
+                        <th>Número</th>
+                        <th>Status</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="c : ${contasCliente}">
+                        <td th:text="${c.tipoConta}"></td>
+                        <td th:text="${c.numeroConta}"></td>
+                        <td th:text="${c.status}"></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
-    </div>
-</div>
+    </div> <!-- fim tab-content -->
+</div> <!-- fim container -->
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>

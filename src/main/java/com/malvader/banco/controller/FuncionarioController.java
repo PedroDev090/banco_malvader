@@ -5,6 +5,8 @@ import com.malvader.banco.models.Conta;
 import com.malvader.banco.models.Funcionario;
 import com.malvader.banco.models.Transacao;
 import com.malvader.banco.models.TipoTransacao;
+import com.malvader.banco.models.Cargo;
+import com.malvader.banco.models.StatusConta;
 import com.malvader.banco.repository.ClienteRepository;
 import com.malvader.banco.repository.TransacaoRepository;
 import com.malvader.banco.service.ContaService;
@@ -24,7 +26,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
-
+import jakarta.servlet.http.HttpSession;
 @Controller
 public class FuncionarioController {
 
@@ -277,13 +279,54 @@ public class FuncionarioController {
 
     // ====== ROTAS DO GERENTE ======
     @GetMapping("/gerente/dashboard")
-    public String dashboardGerente(Model model) {
+    public String dashboardGerente(HttpSession session, Model model) {
+        String nomeUsuario = (String) session.getAttribute("nomeUsuario");
+        model.addAttribute("nomeUsuario", nomeUsuario);
+        model.addAttribute("paginaAtiva", "dashboard"); // se quiser
         return "funcionario/gerente/dashboard";
     }
 
     @GetMapping("/gerente/cadastro")
     public String cadastrarFuncionario(Model model) {
         return "funcionario/gerente/cadastroFuncionario";
+    }
+
+    @PostMapping("/gerente/cadastrar-funcionario")
+    public String processarCadastroFuncionario(
+            @RequestParam("nome") String nome,
+            @RequestParam("cpf") String cpf,
+            @RequestParam("dataNascimento")
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dataNascimento,
+            @RequestParam("telefone") String telefone,
+            @RequestParam("endereco") String endereco,
+            @RequestParam("cargo") Cargo cargo,
+            @RequestParam("senha") String senha,
+            RedirectAttributes redirectAttributes
+    ) {
+        try {
+            Integer idAgencia = 1; // por enquanto fixo
+
+            funcionarioService.cadastrarFuncionario(
+                    nome,
+                    cpf,
+                    dataNascimento,
+                    telefone,
+                    endereco,
+                    cargo,
+                    idAgencia,
+                    senha
+            );
+
+            redirectAttributes.addFlashAttribute("mensagemSucesso",
+                    "Funcionário cadastrado com sucesso!");
+
+        } catch (RuntimeException e) {
+            redirectAttributes.addFlashAttribute("mensagemErro",
+                    "Erro ao cadastrar funcionário: " + e.getMessage());
+        }
+
+        // volta para a tela de cadastro
+        return "redirect:/gerente/cadastro";
     }
 
     @GetMapping("/gerente/abrir-conta")
@@ -304,6 +347,43 @@ public class FuncionarioController {
     @GetMapping("/gerente/encerrar-conta")
     public String encerrarContaGerente(Model model) {
         return "funcionario/gerente/encerrarConta";
+    }
+
+    @PostMapping("/gerente/encerrar-conta")
+    public String processarEncerramentoContaGerente(
+            @RequestParam("numeroConta") String numeroConta,
+            @RequestParam("senha") String senha,
+            @RequestParam("motivo") String motivo,
+            RedirectAttributes redirectAttributes
+    ) {
+        try {
+            Optional<Conta> contaOpt = contaService.buscarPorNumero(numeroConta);
+            if (contaOpt.isEmpty()) {
+                redirectAttributes.addFlashAttribute("erro",
+                        "Conta não encontrada: " + numeroConta);
+                return "redirect:/gerente/encerrar-conta";
+            }
+
+            Conta conta = contaOpt.get();
+
+            if (conta.getStatus() != StatusConta.ATIVA) {
+                redirectAttributes.addFlashAttribute("erro",
+                        "A conta já não está ativa.");
+                return "redirect:/gerente/encerrar-conta";
+            }
+
+            conta.setStatus(StatusConta.ENCERRADA);
+            contaService.salvarConta(conta);
+
+            redirectAttributes.addFlashAttribute("sucesso",
+                    "Conta " + numeroConta + " encerrada com sucesso! Motivo: " + motivo);
+
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("erro",
+                    "Erro ao encerrar conta: " + e.getMessage());
+        }
+
+        return "redirect:/gerente/encerrar-conta";
     }
 
     @GetMapping("/gerente/funcionarios")

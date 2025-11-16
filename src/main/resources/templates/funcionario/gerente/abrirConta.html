@@ -58,24 +58,35 @@
 <body>
 <div class="container">
     <h2>Abertura de Conta</h2>
-    <form id="formConta">
+
+    <form id="formConta" th:action="@{/atendente/abrir-conta}" method="post">
+
+        <!-- Tipo de conta - usa os nomes do enum TipoConta -->
         <label for="tipoConta">Tipo de Conta</label>
-        <select id="tipoConta" name="tipoConta" onchange="mostrarCampos()">
+        <select id="tipoConta" name="tipoConta" onchange="mostrarCampos()" required>
             <option value="">Selecione</option>
-            <option value="CP">Conta Poupança</option>
-            <option value="CC">Conta Corrente</option>
-            <option value="CI">Conta Investimento</option>
+            <option value="POUPANCA">Conta Poupança</option>
+            <option value="CORRENTE">Conta Corrente</option>
+            <option value="INVESTIMENTO">Conta Investimento</option>
         </select>
 
-        <!-- Campos base -->
-        <label>Agência</label><input type="text" name="agencia" required>
-        <label>Número da Conta</label><input type="text" name="numeroConta" required>
-        <label>Nome</label><input type="text" name="nome" required>
-        <label>CPF</label><input type="text" name="cpf" required>
-        <label>Data de Nascimento</label><input type="date" name="dataNascimento" required>
-        <label>Telefone</label><input type="text" name="telefone" required>
-        <label>Endereço Completo</label><input type="text" name="endereco" required>
-        <label>Senha</label><input type="password" name="senha" required>
+        <!-- Campos base que existem em Conta -->
+        <label for="numeroConta">Número da Conta</label>
+        <input id="numeroConta" type="text" name="numeroConta" required>
+
+        <label for="agenciaId">ID da Agência</label>
+        <!-- agencia é um objeto, então passamos o id: agencia.idAgencia -->
+        <input id="agenciaId" type="number" name="agencia.idAgencia" required>
+
+        <label for="clienteId">ID do Cliente</label>
+        <!-- cliente também é objeto, então passamos o id: cliente.idCliente -->
+        <input id="clienteId" type="number" name="cliente.idCliente" required>
+
+        <!-- Campos extras para tipos específicos de conta
+             (ainda não são usados pela entidade Conta,
+              mas podem ser aproveitados depois pelos serviços
+              criarContaCorrente / criarContaPoupanca / criarContaInvestimento)
+        -->
 
         <!-- Campos CP -->
         <div id="camposCP" class="extra-fields">
@@ -97,9 +108,9 @@
         <div id="camposCI" class="extra-fields">
             <label>Perfil de Risco</label>
             <select name="perfilRisco">
-                <option value="baixo">Baixo</option>
-                <option value="medio">Médio</option>
-                <option value="alto">Alto</option>
+                <option value="BAIXO">Baixo</option>
+                <option value="MEDIO">Médio</option>
+                <option value="ALTO">Alto</option>
             </select>
             <label>Valor Mínimo de Investimento (R$)</label>
             <input type="number" step="0.01" name="valorMinimo">
@@ -112,9 +123,15 @@
 <script>
     function mostrarCampos() {
         const tipo = document.getElementById("tipoConta").value;
-        document.getElementById("camposCP").style.display = tipo === "CP" ? "block" : "none";
-        document.getElementById("camposCC").style.display = tipo === "CC" ? "block" : "none";
-        document.getElementById("camposCI").style.display = tipo === "CI" ? "block" : "none";
+
+        document.getElementById("camposCP").style.display =
+            tipo === "POUPANCA" ? "block" : "none";
+
+        document.getElementById("camposCC").style.display =
+            tipo === "CORRENTE" ? "block" : "none";
+
+        document.getElementById("camposCI").style.display =
+            tipo === "INVESTIMENTO" ? "block" : "none";
     }
 </script>
 </body>

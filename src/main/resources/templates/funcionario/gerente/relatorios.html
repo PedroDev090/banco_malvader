@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <title>Relatórios - Banco Malvader</title>
@@ -71,38 +71,71 @@
 
     <!-- Movimentações por período -->
     <div class="section-title">Movimentações por Período</div>
-    <form>
+
+    <!-- Form chama exatamente o GET /atendente/relatorios -->
+    <form th:action="@{/atendente/relatorios}" method="get">
         <div class="row">
             <div class="col-md-4">
                 <label>Data Inicial</label>
-                <input type="date" class="form-control" name="dataInicio" required>
+                <input type="date"
+                       class="form-control"
+                       name="dataInicio"
+                       th:value="${dataInicio}">
             </div>
             <div class="col-md-4">
                 <label>Data Final</label>
-                <input type="date" class="form-control" name="dataFim" required>
+                <input type="date"
+                       class="form-control"
+                       name="dataFim"
+                       th:value="${dataFim}">
             </div>
             <div class="col-md-4">
                 <label>Tipo de Transação</label>
                 <select class="form-control" name="tipoTransacao">
-                    <option value="">Todos</option>
-                    <option value="deposito">Depósito</option>
-                    <option value="saque">Saque</option>
-                    <option value="transferencia">Transferência</option>
+                    <option value=""
+                            th:selected="${tipoTransacao == null}">
+                        Todos
+                    </option>
+                    <option value="DEPOSITO"
+                            th:selected="${tipoTransacao != null and tipoTransacao == 'DEPOSITO'}">
+                        Depósito
+                    </option>
+                    <option value="SAQUE"
+                            th:selected="${tipoTransacao != null and tipoTransacao == 'SAQUE'}">
+                        Saque
+                    </option>
+                    <option value="TRANSFERENCIA"
+                            th:selected="${tipoTransacao != null and tipoTransacao == 'TRANSFERENCIA'}">
+                        Transferência
+                    </option>
                 </select>
             </div>
         </div>
 
         <label>Agência</label>
         <select class="form-control" name="agencia">
-            <option value="">Todas</option>
-            <option value="001">Agência 001</option>
-            <option value="002">Agência 002</option>
-            <option value="003">Agência 003</option>
+            <option value=""
+                    th:selected="${agencia == null}">
+                Todas
+            </option>
+            <option value="1"
+                    th:selected="${agencia != null and agencia == '1'}">
+                Agência 001
+            </option>
+            <option value="2"
+                    th:selected="${agencia != null and agencia == '2'}">
+                Agência 002
+            </option>
+            <option value="3"
+                    th:selected="${agencia != null and agencia == '3'}">
+                Agência 003
+            </option>
         </select>
 
         <button type="submit">Filtrar</button>
     </form>
 
+    <!-- Tabela de transações filtradas -->
     <table class="table table-bordered">
         <thead>
         <tr>
@@ -114,12 +147,36 @@
         </tr>
         </thead>
         <tbody>
-        <tr><td>13/11/2025</td><td>Depósito</td><td>R$ 1.000,00</td><td>001</td><td>12345678-9</td></tr>
-        <tr><td>12/11/2025</td><td>Saque</td><td>R$ 300,00</td><td>002</td><td>98765432-1</td></tr>
+        <!-- Loop nas transações vindas do controller -->
+        <tr th:each="t : ${transacoes}">
+            <td th:text="${#temporals.format(t.dataHora, 'dd/MM/yyyy')}">
+                13/11/2025
+            </td>
+            <td th:text="${t.tipoTransacao}">
+                DEPOSITO
+            </td>
+            <td th:text="${t.valor}">
+                1000.00
+            </td>
+            <!-- ajusta esses acessos conforme seu modelo -->
+            <td th:text="${t.contaOrigem != null and t.contaOrigem.agencia != null ? t.contaOrigem.agencia.idAgencia : ''}">
+                1
+            </td>
+            <td th:text="${t.contaOrigem != null ? t.contaOrigem.numeroConta : ''}">
+                123456
+            </td>
+        </tr>
+
+        <!-- Mensagem quando não houver nenhuma transação -->
+        <tr th:if="${#lists.isEmpty(transacoes)}">
+            <td colspan="5" class="text-center">
+                Nenhuma transação encontrada para os filtros informados.
+            </td>
+        </tr>
         </tbody>
     </table>
 
-    <!-- Clientes inadimplentes -->
+    <!-- Clientes inadimplentes (por enquanto pode ficar estático ou você troca pra dinâmico depois) -->
     <div class="section-title">Clientes Inadimplentes</div>
     <table class="table table-bordered">
         <thead>
