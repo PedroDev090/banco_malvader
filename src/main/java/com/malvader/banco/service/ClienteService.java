@@ -118,8 +118,6 @@ public class ClienteService {
         return clienteRepository.existsById(idCliente);
     }
 
-    // Adicionar este método no ClienteService que já existe:
-
     /**
      * Buscar cliente por ID com usuário
      */

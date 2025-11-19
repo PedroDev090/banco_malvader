@@ -45,8 +45,6 @@ public class DashboardController {
         model.addAttribute("usuario", usuarioSessao);
         model.addAttribute("paginaAtiva", "dashboard");
 
-        // Aqui podemos adicionar dados específicos do funcionário
-        // como estatísticas, notificações, etc.
 
         return "funcionario/dashboard";
     }
@@ -67,11 +65,7 @@ public class DashboardController {
         model.addAttribute("paginaAtiva", "dashboard");
 
         try {
-            // Buscar contas do cliente (em produção, buscar pelo ID real do cliente)
-            // List<Conta> contas = contaService.buscarPorCliente(usuarioSessao.getIdCliente());
-            // model.addAttribute("contas", contas);
 
-            // Dados simulados
             model.addAttribute("saldoTotal", 5250.00);
             model.addAttribute("totalContas", 3);
             model.addAttribute("ultimaTransacao", 150.00);

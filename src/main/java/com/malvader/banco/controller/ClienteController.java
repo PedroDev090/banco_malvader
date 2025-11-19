@@ -71,7 +71,7 @@ public class ClienteController {
         return "clientes/menuCliente";
     }
 
-    // ========== DEPÓSITO ==========
+    //  DEPÓSITO
     @GetMapping("/deposito")
     public String paginaDeposito(HttpSession session, Model model) {
         if (session.getAttribute("usuarioLogado") == null) {
@@ -436,14 +436,12 @@ public class ClienteController {
                 return "redirect:/cliente/encerrar-conta";
             }
 
-            // TODO: validar senha do cliente (comparar hash em Usuario)
-            // Por enquanto, vamos assumir que a senha está correta.
+
 
             // Marcar conta como encerrada
             conta.setStatus(StatusConta.ENCERRADA);
             contaService.salvarConta(conta);
 
-            // Aqui você poderia registrar o motivo numa tabela de histórico, se existir.
 
             redirectAttributes.addFlashAttribute("sucesso",
                     "Conta " + numeroConta + " encerrada com sucesso!");

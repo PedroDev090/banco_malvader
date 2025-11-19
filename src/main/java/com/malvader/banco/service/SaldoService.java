@@ -61,7 +61,6 @@ public class SaldoService {
     @Transactional(readOnly = true)
     public boolean validarLimiteOperacao(Integer idConta, BigDecimal valor, String tipoOperacao) {
         // Implementar regras específicas de limite
-        // Ex: limite diário, limite por operação, etc.
-        return true; // Temporário
+        return true;
     }
 }

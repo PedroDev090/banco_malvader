@@ -216,8 +216,7 @@ public class OperacaoService {
      * Realizar transferência PIX (simplificado)
      */
     public Transacao realizarPix(Integer idContaOrigem, String chavePix, BigDecimal valor, String descricao) {
-        // Em um sistema real, aqui buscaria a conta pela chave PIX
-        // Por enquanto, vamos simular encontrando uma conta qualquer
+
         List<Conta> contas = contaService.buscarContasAtivasPorCliente(1); // Cliente exemplo
 
         if (contas.isEmpty()) {

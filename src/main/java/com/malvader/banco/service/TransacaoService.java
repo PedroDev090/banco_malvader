@@ -25,7 +25,7 @@ public class TransacaoService {
     @Autowired
     private SaldoService saldoService; // ← NOVA DEPENDÊNCIA
 
-    // REMOVIDO: private ContaService contaService;
+
 
     /**
      * Realizar depósito
@@ -153,8 +153,6 @@ public class TransacaoService {
         }
     }
 
-    // Manter os outros métodos (buscarExtrato, aplicarTaxa, aplicarRendimento, etc.)
-    // Eles permanecem iguais, apenas removendo a dependência do ContaService
 
     /**
      * Buscar extrato por período

@@ -31,8 +31,6 @@ public interface FuncionarioRepository extends JpaRepository<Funcionario, Intege
     @Query("SELECT f FROM Funcionario f JOIN FETCH f.agencia a JOIN FETCH a.endereco WHERE f.idFuncionario = :idFuncionario")
     Optional<Funcionario> findByIdWithAgenciaAndEndereco(@Param("idFuncionario") Integer idFuncionario);
 
-    // ⬇⬇ ADICIONAR ESTES DOIS MÉTODOS ⬇⬇
-
     Optional<Funcionario> findByCodigoFuncionario(String codigoFuncionario);
 
     Optional<Funcionario> findByCodigoFuncionarioAndCargo(String codigoFuncionario, Cargo cargo);
